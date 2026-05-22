@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="影学者 logo">
+  <defs>
+    <linearGradient id="bg" x1="18" y1="12" x2="110" y2="116" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#15202f"/>
+      <stop offset="0.52" stop-color="#0d1320"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="page" x1="31" y1="61" x2="99" y2="94" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#dbe4ee"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#020617" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <path d="M102 18c-2 25-17 43-41 53 18 2 33 12 43 29-3-32 4-57 19-76-7 2-14 0-21-6z" fill="#23324a" opacity="0.72"/>
+
+  <g filter="url(#softShadow)">
+    <path d="M27 70c14-8 27-7 37 3v34c-11-10-24-12-37-5V70z" fill="url(#page)"/>
+    <path d="M101 70c-14-8-27-7-37 3v34c11-10 24-12 37-5V70z" fill="#cbd7e6"/>
+    <path d="M64 73v34" fill="none" stroke="#8ea0b8" stroke-width="3" stroke-linecap="round"/>
+    <path d="M36 77c8-2 15-1 21 3M36 88c8-2 15-1 21 3" fill="none" stroke="#93a4ba" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+    <path d="M92 77c-8-2-15-1-21 3M92 88c-8-2-15-1-21 3" fill="none" stroke="#8396ad" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+  </g>
+
+  <circle cx="64" cy="46" r="24" fill="#0f172a" stroke="#d6b15f" stroke-width="5"/>
+  <text x="64" y="57"
+        text-anchor="middle"
+        font-family="PingFang SC, Hiragino Sans GB, Noto Sans CJK SC, Source Han Sans SC, Microsoft YaHei, sans-serif"
+        font-size="36"
+        font-weight="800"
+        fill="#f8fafc">影</text>
+  <path d="M91 28l3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8z" fill="#e6c56f"/>
+</svg>

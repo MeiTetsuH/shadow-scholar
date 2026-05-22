@@ -1,0 +1,22 @@
+# Personal / sensitive files
+1.md
+*.key
+*.secret
+*.env
+.env*
+*.zip
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build output
+dist/
+build/
+node_modules/
