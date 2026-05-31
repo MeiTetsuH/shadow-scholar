@@ -15,6 +15,7 @@
 - **Side panel chat** — full conversation interface with streaming responses and Markdown rendering
 - **Context menu** — right-click selected text to send it directly to the AI
 - **Page analysis** — extract and analyze entire page content with one click
+- **WEBテスト（SPI）personality mode** — keeps personality-test responses aligned to one consistent self-image
 
 ### 🔒 Local Privacy Controls
 Optional local privacy and page-interaction controls run only in the browser:
@@ -57,7 +58,7 @@ Optional local privacy and page-interaction controls run only in the browser:
 
 ### API Configuration
 
-Shadow Scholar supports any OpenAI-compatible API endpoint:
+Shadow Scholar defaults to OpenAI and also supports any OpenAI-compatible API endpoint:
 
 | Provider | Example URL |
 |----------|-------------|
@@ -122,12 +123,13 @@ All settings are stored in `chrome.storage.local`:
 
 | Key | Description | Default |
 |-----|-------------|---------|
-| `apiUrl` | LLM API endpoint URL | User configured |
+| `apiUrl` | LLM API endpoint URL | `https://api.openai.com/v1` |
 | `apiKey` | API authentication key | *(required)* |
 | `model` | Model identifier | `openai/gpt-5.4-mini` |
-| `systemPrompt` | System prompt for AI behavior | Built-in exam assistant prompt |
+| `systemPrompt` | Legacy answer-mode system prompt | Built-in exam assistant prompt |
+| `systemPrompts` | Mode-specific prompts for answer, idea, and WEBテスト（SPI）personality modes | Built-in prompts |
 | `antiDetect` | Enable/disable the optional local page interaction helper | `true` |
-| `mode` | Answer mode or idea mode | `answer` |
+| `mode` | Answer, idea, or WEBテスト（SPI）personality mode | `answer` |
 
 ## 🔒 Privacy
 

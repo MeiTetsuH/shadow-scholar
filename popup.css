@@ -321,6 +321,11 @@ body {
   box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
 }
 
+.mode-btn.active[data-mode="personality"] {
+  background: #ec4899;
+  box-shadow: 0 0 8px rgba(236, 72, 153, 0.3);
+}
+
 .mode-hint {
   font-size: 10px;
   color: var(--text-tertiary);

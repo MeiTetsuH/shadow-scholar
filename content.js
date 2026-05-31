@@ -70,6 +70,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       background: linear-gradient(135deg, #f59e0b, #ef4444);
       box-shadow: 0 2px 8px rgba(245,158,11,0.35), inset 0 1px 1px rgba(255,255,255,0.2);
     }
+    .ninja-fab.personality-mode {
+      width: 28px;
+      height: 24px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #db2777, #f97316);
+      border-color: rgba(251,113,133,0.55);
+      color: #fff7ed;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 22px;
+      box-shadow: 0 2px 9px rgba(219,39,119,0.42), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 1px rgba(255,255,255,0.24);
+      opacity: 0.72;
+    }
     .ninja-fab:hover {
       transform: scale(1.22) rotate(15deg);
       opacity: 0.95;
@@ -77,6 +90,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     .ninja-fab.idea-mode:hover {
       box-shadow: 0 4px 16px rgba(245,158,11,0.6), 0 0 10px rgba(239,68,68,0.35);
+    }
+    .ninja-fab.personality-mode:hover {
+      box-shadow: 0 4px 16px rgba(236,72,153,0.58), 0 0 10px rgba(139,92,246,0.34);
     }
     .ninja-fab:active { transform: scale(0.9); }
     @keyframes ninja-pop {
@@ -299,11 +315,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   let currentMode = 'answer';
   function updateFabMode(mode) {
     currentMode = mode || 'answer';
+    fab.classList.remove('idea-mode', 'personality-mode');
     if (currentMode === 'idea') {
       fab.classList.add('idea-mode');
+      fab.textContent = '💡';
       fab.title = '影学者 - 💡 思路模式';
+    } else if (currentMode === 'personality') {
+      fab.classList.add('personality-mode');
+      fab.textContent = '性';
+      fab.title = '影学者 - 🧭 性格测试模式';
     } else {
-      fab.classList.remove('idea-mode');
+      fab.textContent = '🥷';
       fab.title = '影学者 - 🎯 答案模式';
     }
   }
@@ -337,11 +359,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const panelClose = panel.querySelector('.ninja-panel-close');
   const btnCopy = panel.querySelector('[data-action="copy"]');
   const btnSidebar = panel.querySelector('[data-action="sidebar"]');
+  const panelTitle = panel.querySelector('.ninja-panel-title');
 
   let selectedText = '';
+  let currentQuestionText = '';
   let currentAnswer = '';
   let currentPort = null;
   let hideTimeout = null;
+  let currentQuestionMode = 'answer';
+  let currentSidebarRecordId = '';
+  let currentSidebarSent = false;
 
   // ============================
   // 选中文字检测
@@ -428,7 +455,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     panel.style.animation = 'ninja-slide 0.25s ease-out';
 
     panelBody.innerHTML = '<div class="ninja-loading"><span></span><span></span><span></span></div>';
+    currentQuestionText = '';
     currentAnswer = '';
+    currentQuestionMode = currentMode;
+    currentSidebarRecordId = '';
+    currentSidebarSent = false;
+    panelTitle.textContent = currentQuestionMode === 'personality'
+      ? '🧭 性格测试'
+      : '🥷 影学者';
+    btnSidebar.textContent = currentQuestionMode === 'personality'
+      ? '🧭 自动同步'
+      : '📌 发到侧边栏';
   }
 
   function hidePanel() {
@@ -457,14 +494,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // 发到侧边栏
   btnSidebar.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (!selectedText || !currentAnswer) return;
-    chrome.runtime.sendMessage({
-      type: 'save-inline-to-sidebar',
-      question: selectedText,
-      answer: currentAnswer
+    if (!currentQuestionText || !currentAnswer) return;
+    sendInlineAnswerToSidebar(currentQuestionText, currentAnswer, {
+      auto: false,
+      mode: currentQuestionMode
     });
-    btnSidebar.textContent = '✅ 已发送';
-    setTimeout(() => { btnSidebar.textContent = '📌 发到侧边栏'; }, 1500);
   });
 
   // 面板拖拽
@@ -499,7 +533,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return;
     }
 
-    const prompt = Prompts.buildAnswerPrompt(text);
+    const questionMode = currentQuestionMode;
+    const useScreenshot = questionMode === 'personality';
+    const prompt = useScreenshot ? text : Prompts.buildAnswerPrompt(text);
+    currentQuestionText = useScreenshot
+      ? `当前浏览器截图${text ? `\n\n辅助文字：\n${text}` : ''}`
+      : text;
 
     try {
       currentPort = chrome.runtime.connect({ name: 'llm-stream' });
@@ -511,7 +550,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           renderMarkdown(currentAnswer);
         } else if (msg.type === 'done') {
           renderMarkdown(currentAnswer);
-          saveToHistory(text, currentAnswer);
+          saveToHistory(currentQuestionText, currentAnswer);
+          if (questionMode === 'personality') {
+            sendInlineAnswerToSidebar(currentQuestionText, currentAnswer, {
+              auto: true,
+              mode: questionMode
+            });
+          }
         } else if (msg.type === 'error') {
           panelBody.innerHTML = `<p style="color:#f87171;">❌ ${msg.error}</p>`;
         }
@@ -529,7 +574,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       // 发送消息
       currentPort.postMessage({
-        action: 'chat',
+        action: useScreenshot ? 'chat-screenshot' : 'chat',
         messages: [{ role: 'user', content: prompt }]
       });
     } catch (e) {
@@ -629,6 +674,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         timestamp: Date.now()
       });
     } catch(e) {}
+  }
+
+  function sendInlineAnswerToSidebar(question, answer, { auto = false, mode = currentMode } = {}) {
+    if (currentSidebarSent) {
+      btnSidebar.textContent = '✅ 已同步';
+      return;
+    }
+
+    currentSidebarSent = true;
+    currentSidebarRecordId = currentSidebarRecordId || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    try {
+      chrome.runtime.sendMessage({
+        type: 'save-inline-to-sidebar',
+        recordId: currentSidebarRecordId,
+        question,
+        answer,
+        mode,
+        auto,
+        url: window.location.href,
+        title: document.title,
+        timestamp: Date.now()
+      });
+      btnSidebar.textContent = auto ? '✅ 已自动同步' : '✅ 已发送';
+    } catch(e) {
+      currentSidebarSent = false;
+      btnSidebar.textContent = '⚠️ 同步失败';
+    }
   }
 
 })();

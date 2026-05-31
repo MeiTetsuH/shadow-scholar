@@ -1,14 +1,15 @@
 /**
  * 影学者 - Popup 逻辑 (极简版)
  * 一个入口：打开侧边面板
- * 模式切换：答案模式 / 思路模式
+ * 模式切换：答案模式 / 思路模式 / 性格测试模式
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   const Settings = globalThis.ShadowScholarSettings;
   const modeHints = {
     answer: '直接给出完整答案',
-    idea: '只给解题思路，适合有回放检测的平台'
+    idea: '只给解题思路，适合有回放检测的平台',
+    personality: '截图读取当前页面，先给答案再翻译题目'
   };
 
   // 检查 API 配置状态 & 当前模式
@@ -34,14 +35,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('mode-hint').textContent = modeHints[mode] || '';
   }
 
-  document.getElementById('mode-answer').addEventListener('click', () => {
-    setActiveMode('answer');
-    chrome.storage.local.set({ mode: 'answer' });
-  });
-
-  document.getElementById('mode-idea').addEventListener('click', () => {
-    setActiveMode('idea');
-    chrome.storage.local.set({ mode: 'idea' });
+  document.querySelectorAll('.mode-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.mode || 'answer';
+      setActiveMode(mode);
+      chrome.storage.local.set({ mode });
+    });
   });
 
   // 打开侧边面板

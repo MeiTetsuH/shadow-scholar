@@ -29,6 +29,35 @@
 5. 默认中文回答，不说废话，不用emoji，不说"我是AI"。
 6. 给出复杂度分析：时间O(?)/空间O(?)。`;
 
+  const PERSONALITY_MODE_PROMPT = `你是一个 WEBテスト（SPI）性格検査的受検辅助引擎。用户会发来当前浏览器可见区域截图，你需要直接读取截图中的题目和选项来回答。题目可能是日文、中文或英文，也可能在不同页面反复出现相似选项或反向表述。
+
+一贯自我画像：
+- 诚实、守时、责任感强，重视规则、承诺和结果。
+- 稳定可靠，压力下也能冷静处理，不轻易情绪化。
+- 协调性好，能倾听他人并配合团队，但也能主动推进任务。
+- 做事计划性强，细致认真，愿意持续改善。
+- 有学习意愿和挑战精神，但不鲁莽、不夸大、不逞强。
+- 面对失误会承认并复盘，不逃避责任。
+
+回答规则：
+1. 必须先给答案，第一行直接写应该选择的选项、方向或量表位置。
+2. 答案后翻译截图中的问题；如果原题不是中文，翻译成中文；如果原题已经是中文，可简要改写题意。
+3. 只在必要时用一句话说明理由，不要长篇解析。
+4. 如果选项是程度量表，按上述自我画像选择稳定、积极但不过度极端的程度。
+5. 对明显负面特质（经常迟到、容易放弃、情绪失控、推卸责任、不守规则、与人冲突、粗心反复犯错等）倾向选择否定。
+6. 对正面职业特质（责任感、协作、计划性、诚实、冷静、学习意愿、持续改善、适度主动性等）倾向选择肯定。
+7. 如果出现重复题、近义题或反向题，必须保持同一个人物画像，避免前后互相矛盾。
+8. 如果多个选项都可行，优先选择与企业通用适性更一致、风险更低的答案。
+9. 如果截图里有多道题，逐题按“答案 -> 问题翻译”的顺序输出。
+10. 如果截图不清或选项不完整，先给基于可见内容的最稳妥答案，再指出缺失的信息。
+11. 不要寒暄，不要输出无关解释，不要说"我是AI"。`;
+
+  const DEFAULT_SYSTEM_PROMPTS = Object.freeze({
+    answer: DEFAULT_SYSTEM_PROMPT,
+    idea: IDEA_MODE_PROMPT,
+    personality: PERSONALITY_MODE_PROMPT
+  });
+
   function buildAnswerPrompt(text) {
     return `用户正在做题，选中了以下题目内容。请立即给出答案，然后解释。\n\n---\n${text}\n---`;
   }
@@ -45,17 +74,49 @@
     return `用户之前在页面内通过影学者解答了一个问题，请把这个问答记录保存到对话中。\n\n用户的问题：\n${question}\n\n之前的回答：\n${answer}`;
   }
 
-  function getSystemPromptForMode({ mode = 'answer', systemPrompt = '' } = {}) {
-    return mode === 'idea' ? IDEA_MODE_PROMPT : systemPrompt;
+  function buildPersonalityScreenshotPrompt(contextText = '') {
+    const context = String(contextText || '').trim();
+    return `请根据当前浏览器可见区域截图回答 WEBテスト / SPI 性格検査题目。
+
+输出格式：
+1. 先给答案：直接写应该选择的选项、方向或量表位置。
+2. 然后翻译问题：把截图中的题目翻译成中文。
+3. 如有必要，最后补一句极简理由。
+
+${context ? `用户额外提供/选中的文字如下，可作为辅助参考，但以截图为准：\n---\n${context}\n---` : '用户没有额外文字，请直接读取截图。'}`;
+  }
+
+  function getDefaultSystemPromptForMode(mode = 'answer') {
+    return DEFAULT_SYSTEM_PROMPTS[mode] || DEFAULT_SYSTEM_PROMPTS.answer;
+  }
+
+  function getSystemPromptForMode({ mode = 'answer', systemPrompt = '', systemPrompts = null } = {}) {
+    const modePrompts = systemPrompts && typeof systemPrompts === 'object'
+      ? systemPrompts
+      : null;
+
+    if (modePrompts && typeof modePrompts[mode] === 'string') {
+      return modePrompts[mode];
+    }
+
+    if (mode === 'answer' && typeof systemPrompt === 'string') {
+      return systemPrompt;
+    }
+
+    return getDefaultSystemPromptForMode(mode);
   }
 
   globalThis.ShadowScholarPrompts = Object.freeze({
     DEFAULT_SYSTEM_PROMPT,
     IDEA_MODE_PROMPT,
+    PERSONALITY_MODE_PROMPT,
+    DEFAULT_SYSTEM_PROMPTS,
+    getDefaultSystemPromptForMode,
     buildAnswerPrompt,
     buildPageAnalysisPrompt,
     buildSelectionAnalysisPrompt,
     buildInlineArchivePrompt,
+    buildPersonalityScreenshotPrompt,
     getSystemPromptForMode
   });
 })();

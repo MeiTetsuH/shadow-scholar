@@ -38,6 +38,16 @@ function storeLog(level, message) {
   } catch (e) {}
 }
 
+function maskUrlForLog(url) {
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    return `${parsed.protocol}//${parsed.host}/...`;
+  } catch (e) {
+    return '[custom-api-url]';
+  }
+}
+
 // ============================
 // DOM 元素引用
 // ============================
@@ -45,6 +55,11 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 const Prompts = globalThis.ShadowScholarPrompts;
 const Settings = globalThis.ShadowScholarSettings;
+const MODE_META = Object.freeze({
+  answer: { label: '🎯 答案模式', badgeClass: '' },
+  idea: { label: '💡 思路模式', badgeClass: 'idea' },
+  personality: { label: '🧭 性格测试模式', badgeClass: 'personality' }
+});
 
 const elements = {
   chatArea: $('#chat-area'),
@@ -80,6 +95,9 @@ let isStreaming = false;
 let currentPort = null;
 let currentAiMessageEl = null;
 let streamedContent = '';
+let currentSettings = Settings.normalizeSettings({});
+let settingPromptMode = 'answer';
+const importedInlineRecordIds = new Set();
 
 // ============================
 // 初始化
@@ -106,6 +124,17 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.onChanged.addListener((changes) => {
     if (changes.mode) {
       updateModeBadge(changes.mode.newValue);
+      setTopbarMode(changes.mode.newValue);
+      currentSettings.mode = changes.mode.newValue || 'answer';
+      setSystemPromptEditorMode(currentSettings.mode, { preserveDraft: true });
+    }
+
+    if (changes.systemPrompts) {
+      currentSettings.systemPrompts = Settings.normalizeSystemPrompts({
+        ...currentSettings,
+        systemPrompts: changes.systemPrompts.newValue
+      });
+      setSystemPromptEditorMode(settingPromptMode);
     }
   });
 
@@ -129,13 +158,10 @@ function updateModeBadge(mode) {
 }
 
 function applyModeBadge(badge, mode) {
-  if (mode === 'idea') {
-    badge.textContent = '💡 思路模式';
-    badge.classList.add('idea');
-  } else {
-    badge.textContent = '🎯 答案模式';
-    badge.classList.remove('idea');
-  }
+  const meta = MODE_META[mode] || MODE_META.answer;
+  badge.textContent = meta.label;
+  badge.classList.remove('idea', 'personality');
+  if (meta.badgeClass) badge.classList.add(meta.badgeClass);
 }
 
 /**
@@ -220,11 +246,22 @@ function sanitizeRenderedHtml(html) {
 // ============================
 async function checkPendingQuery() {
   try {
-    const result = await chrome.storage.local.get(['pendingQuery', 'pendingAction']);
+    const result = await chrome.storage.local.get(['pendingQuery', 'pendingAction', 'pendingInlineRecords']);
+
+    if (Array.isArray(result.pendingInlineRecords) && result.pendingInlineRecords.length > 0) {
+      let importedCount = 0;
+      result.pendingInlineRecords.forEach((record) => {
+        if (importInlineAnswerRecord(record, { silent: true })) importedCount++;
+        if (record?.id) acknowledgeInlineRecord(record.id);
+      });
+      if (importedCount > 0) {
+        showToast(`已导入 ${importedCount} 条内联问答记录`, 'success');
+      }
+    }
     
     // 检查待处理查询
     if (result.pendingQuery) {
-      const { prompt, timestamp } = result.pendingQuery;
+      const { prompt, timestamp, useScreenshot } = result.pendingQuery;
       const age = Date.now() - timestamp;
       log('发现待处理查询, 年龄:', age, 'ms, prompt长度:', prompt.length);
 
@@ -235,7 +272,7 @@ async function checkPendingQuery() {
         log('已清除待处理查询, 开始执行');
         // 稍等 DOM 完全就绪
         setTimeout(() => {
-          sendMessage(prompt);
+          sendMessage(prompt, { useScreenshot: useScreenshot === true });
         }, 300);
       } else {
         log('待处理查询已过期, 清除');
@@ -305,11 +342,11 @@ function setupEventListeners() {
   elements.btnQuickSelection.addEventListener('click', () => analyzeContent('selection'));
 
   // 顶栏模式切换
-  const modeAnswer = document.getElementById('sp-mode-answer');
-  const modeIdea = document.getElementById('sp-mode-idea');
-  if (modeAnswer && modeIdea) {
-    modeAnswer.addEventListener('click', () => switchMode('answer'));
-    modeIdea.addEventListener('click', () => switchMode('idea'));
+  const modeButtons = document.querySelectorAll('.topbar-mode-btn');
+  if (modeButtons.length > 0) {
+    modeButtons.forEach((btn) => {
+      btn.addEventListener('click', () => switchMode(btn.dataset.mode || 'answer'));
+    });
     // 初始化模式按钮状态
     chrome.storage.local.get('mode', (result) => {
       setTopbarMode(result.mode || 'answer');
@@ -324,9 +361,11 @@ function setupEventListeners() {
  */
 function switchMode(mode) {
   chrome.storage.local.set({ mode }, () => {
+    currentSettings.mode = mode;
     setTopbarMode(mode);
     updateModeBadge(mode);
-    const label = mode === 'idea' ? '💡 思路模式' : '🎯 答案模式';
+    setSystemPromptEditorMode(mode, { preserveDraft: true });
+    const label = (MODE_META[mode] || MODE_META.answer).label;
     showToast(`已切换到${label}`, 'success');
     log('模式已切换:', mode);
   });
@@ -338,17 +377,57 @@ function setTopbarMode(mode) {
   });
 }
 
+function getModeLabel(mode) {
+  return (MODE_META[mode] || MODE_META.answer).label.replace(/^[^\s]+ /, '');
+}
+
+function rememberSystemPromptDraft() {
+  if (!elements.settingSystemPrompt) return;
+
+  currentSettings.systemPrompts = {
+    ...Settings.normalizeSystemPrompts(currentSettings),
+    [settingPromptMode]: elements.settingSystemPrompt.value
+  };
+  currentSettings.systemPrompt = currentSettings.systemPrompts.answer;
+}
+
+function setSystemPromptEditorMode(mode, { preserveDraft = false } = {}) {
+  if (!elements.settingSystemPrompt) return;
+
+  if (preserveDraft) {
+    rememberSystemPromptDraft();
+  }
+
+  settingPromptMode = mode || 'answer';
+  const systemPrompts = Settings.normalizeSystemPrompts(currentSettings);
+  elements.settingSystemPrompt.value = systemPrompts[settingPromptMode] || '';
+  elements.settingSystemPrompt.placeholder = `${getModeLabel(settingPromptMode)}的 System Prompt`;
+
+  const label = document.querySelector('label[for="setting-system-prompt"]');
+  if (label) {
+    label.textContent = `System Prompt · ${getModeLabel(settingPromptMode)}`;
+  }
+}
+
 // ============================
 // 监听来自右键菜单的查询（直接消息方式）
 // ============================
 function listenForContextMenuQueries() {
   chrome.runtime.onMessage.addListener((message) => {
     log('收到运行时消息:', message.type);
+    if (message.type === 'inline-answer-record' && message.record) {
+      importInlineAnswerRecord(message.record);
+      if (message.record.id) {
+        acknowledgeInlineRecord(message.record.id);
+      }
+      return;
+    }
+
     if (message.type === 'context-menu-query' && message.prompt) {
       // 检查是否已经有相同的待处理查询（避免重复）
       if (!isStreaming) {
         log('处理右键菜单查询, prompt长度:', message.prompt.length);
-        sendMessage(message.prompt);
+        sendMessage(message.prompt, { useScreenshot: message.useScreenshot === true });
       } else {
         log('正在流式输出中, 忽略右键菜单查询');
       }
@@ -358,6 +437,49 @@ function listenForContextMenuQueries() {
     }
   });
   log('右键菜单查询监听器已注册');
+}
+
+function acknowledgeInlineRecord(recordId) {
+  try {
+    chrome.runtime.sendMessage({
+      type: 'ack-inline-record',
+      recordId
+    });
+  } catch (e) {}
+}
+
+function importInlineAnswerRecord(record, { silent = false } = {}) {
+  if (!record || !record.id || importedInlineRecordIds.has(record.id)) return false;
+
+  const question = String(record.question || '').trim();
+  const answer = String(record.answer || '').trim();
+  if (!question || !answer) return false;
+
+  importedInlineRecordIds.add(record.id);
+
+  const label = record.mode === 'personality'
+    ? 'WEBテスト（SPI）性格検査'
+    : '页面内问答';
+  const userContent = `[${label}]\n\n${question}`;
+
+  elements.welcome.classList.add('hidden');
+  addMessage('user', userContent);
+  addMessage('ai', answer);
+  conversationMessages.push({ role: 'user', content: userContent });
+  conversationMessages.push({ role: 'assistant', content: answer });
+
+  log('内联问答记录已导入侧边栏:', {
+    id: record.id,
+    mode: record.mode || 'answer',
+    auto: record.auto === true
+  });
+
+  if (!silent) {
+    showToast(record.auto ? '性格测试问答已自动同步' : '问答已同步到侧边栏', 'success');
+  }
+
+  scrollToBottom();
+  return true;
 }
 
 // ============================
@@ -372,12 +494,13 @@ function handleSend() {
   elements.inputText.style.height = 'auto';
 }
 
-function sendMessage(text) {
+function sendMessage(text, options = {}) {
   if (isStreaming) {
     log('正在流式输出中, 忽略发送请求');
     return;
   }
 
+  const useScreenshot = options.useScreenshot === true || currentSettings.mode === 'personality';
   log('发送消息, 长度:', text.length);
 
   // 隐藏欢迎界面
@@ -388,7 +511,7 @@ function sendMessage(text) {
   conversationMessages.push({ role: 'user', content: text });
 
   // 开始流式请求
-  startStreaming();
+  startStreaming({ useScreenshot });
 }
 
 // ============================
@@ -400,6 +523,15 @@ async function analyzeContent(type) {
   log('分析内容:', type);
 
   try {
+    if (currentSettings.mode === 'personality') {
+      showToast('正在截取当前浏览器画面...');
+      const prompt = type === 'selection'
+        ? '请根据当前浏览器截图回答性格测试题，优先关注当前选中区域附近的题目。'
+        : '请根据当前浏览器截图回答性格测试题。';
+      sendMessage(prompt, { useScreenshot: true });
+      return;
+    }
+
     if (type === 'page') {
       showToast('正在获取页面内容...');
       chrome.runtime.sendMessage({ type: 'get-page-content' }, (response) => {
@@ -443,7 +575,7 @@ async function analyzeContent(type) {
 // ============================
 // 流式对话
 // ============================
-function startStreaming() {
+function startStreaming({ useScreenshot = false } = {}) {
   isStreaming = true;
   elements.btnSend.disabled = true;
   streamedContent = '';
@@ -478,10 +610,10 @@ function startStreaming() {
 
   // 发送消息
   currentPort.postMessage({
-    action: 'chat',
+    action: useScreenshot ? 'chat-screenshot' : 'chat',
     messages: [...conversationMessages]
   });
-  log('Chat 请求已发送, 消息数:', conversationMessages.length);
+  log('Chat 请求已发送, 消息数:', conversationMessages.length, '截图:', useScreenshot);
 }
 
 function handleStreamChunk(content) {
@@ -716,15 +848,18 @@ function loadSettings() {
     Settings.SETTINGS_KEYS,
     (result) => {
       const settings = Settings.normalizeSettings(result);
+      currentSettings = settings;
+      settingPromptMode = settings.mode || 'answer';
 
       elements.settingApiUrl.value = settings.apiUrl;
       if (settings.apiKey) elements.settingApiKey.value = settings.apiKey;
       elements.settingModel.value = settings.model;
-      elements.settingSystemPrompt.value = settings.systemPrompt;
       elements.settingAntiDetect.checked = settings.antiDetect;
+      setSystemPromptEditorMode(settingPromptMode);
       log('设置已加载:', {
-        apiUrl: settings.apiUrl,
+        apiUrl: maskUrlForLog(settings.apiUrl),
         model: settings.model,
+        mode: settings.mode,
         apiKey: settings.apiKey ? '***已设置***' : '(未设置)',
         antiDetect: settings.antiDetect
       });
@@ -733,15 +868,19 @@ function loadSettings() {
 }
 
 function saveSettings() {
+  rememberSystemPromptDraft();
+  const systemPrompts = Settings.normalizeSystemPrompts(currentSettings);
   const settings = {
     apiUrl: elements.settingApiUrl.value.trim(),
     apiKey: elements.settingApiKey.value.trim(),
     model: elements.settingModel.value.trim(),
-    systemPrompt: elements.settingSystemPrompt.value.trim(),
+    systemPrompt: systemPrompts.answer,
+    systemPrompts,
     antiDetect: elements.settingAntiDetect.checked,
   };
 
   chrome.storage.local.set(settings, () => {
+    currentSettings = Settings.normalizeSettings({ ...currentSettings, ...settings });
     log('设置已保存');
     const suffix = settings.antiDetect ? '' : '，反检测关闭后需刷新页面';
     showToast(`设置已保存 ✓${suffix}`, 'success');

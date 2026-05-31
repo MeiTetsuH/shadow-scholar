@@ -18,6 +18,18 @@ const Settings = globalThis.ShadowScholarSettings;
 // ============================
 const LOG_PREFIX = '[影学者:BG]';
 const MAX_LOGS = 200;
+const MAX_PENDING_INLINE_RECORDS = 100;
+let antiDetectSyncQueue = Promise.resolve();
+
+function maskUrlForLog(url) {
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    return `${parsed.protocol}//${parsed.host}/...`;
+  } catch (e) {
+    return '[custom-api-url]';
+  }
+}
 
 function log(...args) {
   const timestamp = new Date().toLocaleTimeString();
@@ -87,14 +99,14 @@ chrome.runtime.onStartup.addListener(() => {
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== 'local' || !changes.antiDetect) return;
 
-  syncAntiDetectContentScript(changes.antiDetect.newValue !== false).catch((e) => {
+  queueAntiDetectContentScriptSync(changes.antiDetect.newValue !== false).catch((e) => {
     logError('反检测脚本同步失败:', e.message);
   });
 });
 
-syncAntiDetectFromStorage().catch((e) => {
-  logError('初始同步反检测脚本失败:', e.message);
-});
+// 注意：不在顶层直接调用 syncAntiDetectFromStorage()，
+// 因为 onInstalled / onStartup 已经覆盖了所有启动场景。
+// 顶层调用会与它们产生竞态，导致 Duplicate script ID 错误。
 
 async function initializeSettingsAndScripts() {
   const result = await chrome.storage.local.get(Settings.SETTINGS_KEYS);
@@ -104,16 +116,26 @@ async function initializeSettingsAndScripts() {
     await chrome.storage.local.set(updates);
     log('缺失设置已初始化:', Object.keys(updates).join(', '));
   } else {
-    log('现有设置已保留:', result.apiUrl, result.model);
+    log('现有设置已保留:', {
+      apiUrl: maskUrlForLog(result.apiUrl),
+      model: result.model
+    });
   }
 
   const effective = Settings.normalizeSettings({ ...result, ...updates });
-  await syncAntiDetectContentScript(effective.antiDetect);
+  await queueAntiDetectContentScriptSync(effective.antiDetect);
 }
 
 async function syncAntiDetectFromStorage() {
   const settings = Settings.normalizeSettings(await chrome.storage.local.get(['antiDetect']));
-  await syncAntiDetectContentScript(settings.antiDetect);
+  await queueAntiDetectContentScriptSync(settings.antiDetect);
+}
+
+function queueAntiDetectContentScriptSync(enabled) {
+  antiDetectSyncQueue = antiDetectSyncQueue
+    .catch(() => {})
+    .then(() => syncAntiDetectContentScript(enabled));
+  return antiDetectSyncQueue;
 }
 
 async function syncAntiDetectContentScript(enabled) {
@@ -123,10 +145,16 @@ async function syncAntiDetectContentScript(enabled) {
   }
 
   const id = Settings.ANTI_DETECT_SCRIPT_ID;
-  const registered = await chrome.scripting.getRegisteredContentScripts({ ids: [id] });
-  const isRegistered = registered.length > 0;
 
-  if (enabled && !isRegistered) {
+  if (enabled) {
+    // 先尝试注销同 ID 的脚本（忽略不存在的错误），再注册新的。
+    // 这样可以彻底避免 getRegisteredContentScripts 在某些浏览器下
+    // 返回过期结果导致的 Duplicate script ID 问题。
+    try {
+      await chrome.scripting.unregisterContentScripts({ ids: [id] });
+    } catch (_) {
+      // 脚本不存在时 unregister 会抛错，忽略即可
+    }
     await chrome.scripting.registerContentScripts([{
       id,
       matches: ['<all_urls>'],
@@ -135,11 +163,14 @@ async function syncAntiDetectContentScript(enabled) {
       world: 'MAIN'
     }]);
     log('反检测脚本已启用，将在新页面加载时注入');
-  } else if (!enabled && isRegistered) {
-    await chrome.scripting.unregisterContentScripts({ ids: [id] });
-    log('反检测脚本已停用，新页面不再注入');
   } else {
-    log('反检测脚本状态无需变更:', enabled ? 'enabled' : 'disabled');
+    // 停用：直接尝试注销，不存在也无所谓
+    try {
+      await chrome.scripting.unregisterContentScripts({ ids: [id] });
+      log('反检测脚本已停用，新页面不再注入');
+    } catch (_) {
+      log('反检测脚本状态无需变更: disabled');
+    }
   }
 }
 
@@ -190,6 +221,93 @@ async function getSelectedTextDirect(tabId) {
   }
 }
 
+async function captureCurrentVisibleTabScreenshot() {
+  log('准备捕获当前可见标签页截图');
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = tabs[0];
+  if (!tab?.windowId) {
+    throw new Error('未找到当前活动标签页，无法截图');
+  }
+
+  // Use the extension-only capture API. This avoids injecting screenshot code
+  // into the page or dispatching DOM/input events that page scripts can observe.
+  const screenshotDataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, {
+    format: 'png'
+  });
+
+  if (!screenshotDataUrl) {
+    throw new Error('截图失败，未获得图像数据');
+  }
+
+  log('当前可见标签页截图完成:', {
+    tabId: tab.id,
+    bytes: screenshotDataUrl.length
+  });
+  return screenshotDataUrl;
+}
+
+function getTextFromMessageContent(content) {
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return '';
+
+  return content
+    .map((part) => {
+      if (typeof part?.text === 'string') return part.text;
+      if (typeof part?.content === 'string') return part.content;
+      return '';
+    })
+    .filter(Boolean)
+    .join('\n');
+}
+
+function getMessageContentLength(content) {
+  if (typeof content === 'string') return content.length;
+  if (!Array.isArray(content)) return 0;
+
+  return content.reduce((total, part) => {
+    if (typeof part?.text === 'string') return total + part.text.length;
+    if (typeof part?.content === 'string') return total + part.content.length;
+    if (part?.image_url?.url) return total + 24;
+    return total;
+  }, 0);
+}
+
+function buildScreenshotMessages(messages, screenshotDataUrl) {
+  const sourceMessages = Array.isArray(messages) ? messages : [];
+  const nextMessages = sourceMessages.map((message) => ({
+    role: message.role,
+    content: message.content
+  }));
+  let lastUserIndex = -1;
+
+  for (let i = nextMessages.length - 1; i >= 0; i--) {
+    if (nextMessages[i]?.role === 'user') {
+      lastUserIndex = i;
+      break;
+    }
+  }
+
+  const contextText = lastUserIndex >= 0
+    ? getTextFromMessageContent(nextMessages[lastUserIndex].content)
+    : '';
+  const prompt = Prompts.buildPersonalityScreenshotPrompt(contextText);
+  const visionMessage = {
+    role: 'user',
+    content: [
+      { type: 'text', text: prompt },
+      { type: 'image_url', image_url: { url: screenshotDataUrl } }
+    ]
+  };
+
+  if (lastUserIndex >= 0) {
+    nextMessages[lastUserIndex] = visionMessage;
+  } else {
+    nextMessages.push(visionMessage);
+  }
+
+  return nextMessages;
+}
+
 async function getActiveTabId() {
   try {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -221,12 +339,17 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
   if (!info.selectionText) return;
 
-  const prompt = Prompts.buildAnswerPrompt(info.selectionText);
+  const settings = Settings.normalizeSettings(await chrome.storage.local.get(Settings.SETTINGS_KEYS));
+  const useScreenshot = settings.mode === 'personality';
+  const prompt = useScreenshot
+    ? info.selectionText
+    : Prompts.buildAnswerPrompt(info.selectionText);
 
   // 存储待处理查询
   await chrome.storage.local.set({
     pendingQuery: {
       prompt,
+      useScreenshot,
       timestamp: Date.now()
     }
   });
@@ -237,7 +360,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     try {
       chrome.runtime.sendMessage({
         type: 'context-menu-query',
-        prompt: prompt
+        prompt,
+        useScreenshot
       });
       log('直接消息已发送到面板');
     } catch (e) {
@@ -351,22 +475,67 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   // 将内联回答发送到侧边栏
   if (message.type === 'save-inline-to-sidebar') {
-    // 存为 pendingQuery，侧边栏打开时会读取
-    const prompt = Prompts.buildInlineArchivePrompt(message.question, message.answer);
-    chrome.storage.local.set({
-      pendingQuery: { prompt, timestamp: Date.now() }
-    });
-    // 尝试通知已打开的侧边栏
-    try {
-      chrome.runtime.sendMessage({
-        type: 'context-menu-query',
-        prompt
+    const record = buildInlineAnswerRecord(message, sender);
+    if (!record.question.trim() || !record.answer.trim()) {
+      log('内联回答为空，跳过侧边栏同步');
+      return false;
+    }
+    queueInlineAnswerRecord(record).then(() => {
+      chrome.runtime.sendMessage({ type: 'inline-answer-record', record }, () => {
+        if (chrome.runtime.lastError) {
+          log('侧边栏未打开，内联回答已加入待同步队列');
+          return;
+        }
+        log('内联回答已发送到侧边栏');
       });
-    } catch(e) {}
-    log('内联回答已转发到侧边栏');
+    }).catch((e) => {
+      logError('内联回答加入侧边栏队列失败:', e.message);
+    });
+    return false;
+  }
+
+  if (message.type === 'ack-inline-record' && message.recordId) {
+    removePendingInlineAnswerRecord(message.recordId).catch((e) => {
+      logError('移除已同步内联记录失败:', e.message);
+    });
     return false;
   }
 });
+
+function buildInlineAnswerRecord(message, sender) {
+  const timestamp = Number(message.timestamp) || Date.now();
+  return {
+    id: String(message.recordId || `${timestamp}-${Math.random().toString(36).slice(2)}`),
+    question: String(message.question || ''),
+    answer: String(message.answer || ''),
+    mode: message.mode || 'answer',
+    auto: message.auto === true,
+    url: message.url || sender?.tab?.url || sender?.url || '',
+    title: message.title || sender?.tab?.title || '',
+    timestamp
+  };
+}
+
+async function queueInlineAnswerRecord(record) {
+  const { pendingInlineRecords = [] } = await chrome.storage.local.get('pendingInlineRecords');
+  const records = Array.isArray(pendingInlineRecords) ? pendingInlineRecords : [];
+  if (!records.some((item) => item.id === record.id)) {
+    records.push(record);
+  }
+  if (records.length > MAX_PENDING_INLINE_RECORDS) {
+    records.splice(0, records.length - MAX_PENDING_INLINE_RECORDS);
+  }
+  await chrome.storage.local.set({ pendingInlineRecords: records });
+}
+
+async function removePendingInlineAnswerRecord(recordId) {
+  const { pendingInlineRecords = [] } = await chrome.storage.local.get('pendingInlineRecords');
+  const records = Array.isArray(pendingInlineRecords) ? pendingInlineRecords : [];
+  const nextRecords = records.filter((record) => record.id !== recordId);
+  if (nextRecords.length !== records.length) {
+    await chrome.storage.local.set({ pendingInlineRecords: nextRecords });
+  }
+}
 
 // ============================
 // 流式连接处理 (Port)
@@ -382,6 +551,21 @@ chrome.runtime.onConnect.addListener((port) => {
       log('Port 消息:', msg.action, '消息数:', msg.messages?.length);
       if (msg.action === 'chat') {
         await handleStreamChat(msg.messages, port, () => portDisconnected, (r) => { activeReader = r; });
+      } else if (msg.action === 'chat-screenshot') {
+        try {
+          const screenshotDataUrl = await captureCurrentVisibleTabScreenshot();
+          const screenshotMessages = buildScreenshotMessages(msg.messages, screenshotDataUrl);
+          await handleStreamChat(
+            screenshotMessages,
+            port,
+            () => portDisconnected,
+            (r) => { activeReader = r; },
+            { mode: 'personality' }
+          );
+        } catch (e) {
+          logError('截图问答失败:', e.message);
+          safeSend(port, { type: 'error', error: e.message || '截图问答失败' }, () => portDisconnected);
+        }
       }
     });
 
@@ -421,7 +605,7 @@ function safeSend(port, msg, isDisconnected) {
  * @param {Function} isDisconnected - 检查 port 是否断开
  * @param {Function} setReader - 注册 reader 以便断开时取消
  */
-async function handleStreamChat(messages, port, isDisconnected, setReader) {
+async function handleStreamChat(messages, port, isDisconnected, setReader, options = {}) {
   try {
     const storedSettings = await chrome.storage.local.get(Settings.SETTINGS_KEYS);
     const settings = Settings.normalizeSettings(storedSettings);
@@ -444,15 +628,22 @@ async function handleStreamChat(messages, port, isDisconnected, setReader) {
     const rawUrl = settings.apiUrl;
     const apiUrl = Settings.buildChatCompletionsUrl(rawUrl);
     const model = settings.model;
-    const mode = settings.mode;
+    const mode = options.mode || settings.mode;
 
-    log('开始流式请求:', { rawUrl, apiUrl, model, mode, messageCount: messages.length });
+    log('开始流式请求:', {
+      rawUrl: maskUrlForLog(rawUrl),
+      apiUrl: maskUrlForLog(apiUrl),
+      model,
+      mode,
+      messageCount: messages.length
+    });
 
     // 根据模式选择系统提示词
     const fullMessages = [];
     const systemPrompt = Prompts.getSystemPromptForMode({
       mode,
-      systemPrompt: settings.systemPrompt
+      systemPrompt: settings.systemPrompt,
+      systemPrompts: settings.systemPrompts
     });
     if (systemPrompt) {
       fullMessages.push({ role: 'system', content: systemPrompt });
@@ -464,7 +655,7 @@ async function handleStreamChat(messages, port, isDisconnected, setReader) {
       messages: fullMessages,
       stream: true
     };
-    const requestChars = fullMessages.reduce((total, item) => total + String(item.content || '').length, 0);
+    const requestChars = fullMessages.reduce((total, item) => total + getMessageContentLength(item.content), 0);
     log('请求体元数据:', {
       model,
       stream: true,

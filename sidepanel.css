@@ -256,6 +256,11 @@ html, body {
   box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
 }
 
+.topbar-mode-btn.active[data-mode="personality"] {
+  background: rgba(236, 72, 153, 0.2);
+  box-shadow: 0 0 8px rgba(236, 72, 153, 0.22);
+}
+
 /* 图标按钮玻璃卡片化 */
 .icon-btn {
   display: flex;
@@ -618,6 +623,12 @@ html, body {
   background: rgba(245, 158, 11, 0.15);
   border-color: rgba(245, 158, 11, 0.3);
   color: #fbbf24;
+}
+
+.mode-badge.personality {
+  background: rgba(236, 72, 153, 0.14);
+  border-color: rgba(236, 72, 153, 0.3);
+  color: #f9a8d4;
 }
 
 /* 快速操作动作卡片 */
