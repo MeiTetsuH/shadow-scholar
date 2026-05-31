@@ -17,7 +17,8 @@
     'systemPrompt',
     'systemPrompts',
     'antiDetect',
-    'mode'
+    'mode',
+    'language'
   ]);
 
   function getDefaultSystemPrompts() {
@@ -58,7 +59,8 @@
       systemPrompt: systemPrompts.answer,
       systemPrompts,
       antiDetect: true,
-      mode: 'answer'
+      mode: 'answer',
+      language: ''
     };
   }
 

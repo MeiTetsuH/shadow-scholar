@@ -8,7 +8,7 @@
  * 日志前缀: [影学者:BG]
  */
 
-importScripts('prompts.js', 'settings.js', 'extractors.js');
+importScripts('i18n.js', 'prompts.js', 'settings.js', 'extractors.js');
 
 const Prompts = globalThis.ShadowScholarPrompts;
 const Settings = globalThis.ShadowScholarSettings;
@@ -79,7 +79,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
       id: 'ninja-answer',
-      title: '🥷 解答这道题',
+      title: chrome.i18n.getMessage('contextMenuAnswer') || '🥷 Answer this question',
       contexts: ['selection']
     });
     log('右键菜单注册完成');
@@ -124,6 +124,14 @@ async function initializeSettingsAndScripts() {
 
   const effective = Settings.normalizeSettings({ ...result, ...updates });
   await queueAntiDetectContentScriptSync(effective.antiDetect);
+
+  // 初次安装时检测并存储浏览器语言
+  if (!result.language) {
+    const I18n = globalThis.ShadowScholarI18n;
+    const detectedLang = I18n ? I18n.detectLanguage() : 'en';
+    await chrome.storage.local.set({ language: detectedLang });
+    log('检测到浏览器语言:', detectedLang);
+  }
 }
 
 async function syncAntiDetectFromStorage() {

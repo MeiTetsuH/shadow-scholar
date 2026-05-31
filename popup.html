@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>影学者</title>
+  <title data-i18n="appName">影学者</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -12,11 +12,11 @@
     <header class="popup-header">
       <div class="popup-logo">
         <img class="popup-logo-icon" src="icons/icon48.png" alt="" aria-hidden="true">
-        <span class="popup-logo-text">影学者</span>
+        <span class="popup-logo-text" data-i18n="appName">影学者</span>
       </div>
       <div class="status-badge" id="status-badge">
         <span class="status-dot"></span>
-        <span class="status-text">未配置</span>
+        <span class="status-text" data-i18n="popupStatusNotConfigured">未配置</span>
       </div>
     </header>
 
@@ -27,8 +27,8 @@
           <img src="icons/icon48.png" alt="" aria-hidden="true">
         </div>
         <div class="action-info">
-          <div class="action-title">打开影学者</div>
-          <div class="action-desc">侧边面板 · 对话 & 答题</div>
+          <div class="action-title" data-i18n="popupOpenPanel">打开影学者</div>
+          <div class="action-desc" data-i18n="popupPanelDesc">侧边面板 · 对话 & 答题</div>
         </div>
         <div class="action-arrow">→</div>
       </button>
@@ -38,33 +38,34 @@
     <div class="popup-settings">
       <!-- 模式切换 -->
       <div class="settings-row">
-        <span class="settings-label">📋 模式</span>
+        <span class="settings-label" data-i18n="popupModeLabel">📋 模式</span>
         <div class="mode-switch" id="mode-switch">
-          <button class="mode-btn active" data-mode="answer" id="mode-answer">🎯 答案</button>
-          <button class="mode-btn" data-mode="idea" id="mode-idea">💡 思路</button>
-          <button class="mode-btn" data-mode="personality" id="mode-personality">🧭 性格</button>
+          <button class="mode-btn active" data-mode="answer" id="mode-answer" data-i18n="modeAnswerShort">🎯 答案</button>
+          <button class="mode-btn" data-mode="idea" id="mode-idea" data-i18n="modeIdeaShort">💡 思路</button>
+          <button class="mode-btn" data-mode="personality" id="mode-personality" data-i18n="modeScreenshotShort">📸 截图</button>
         </div>
       </div>
-      <div class="mode-hint" id="mode-hint">直接给出完整答案</div>
+      <div class="mode-hint" id="mode-hint" data-i18n="hintAnswer">直接给出完整答案</div>
       <div class="settings-row">
-        <span class="settings-label">🛡️ 反检测</span>
+        <span class="settings-label" data-i18n="popupAntiDetect">🛡️ 反检测</span>
         <div class="mini-toggle">
           <input type="checkbox" id="toggle-anti-detect" checked>
           <span class="mini-toggle-slider"></span>
         </div>
       </div>
       <button class="settings-link" id="btn-full-settings">
-        ⚙️ 完整设置
+        <span data-i18n="popupFullSettings">⚙️ 完整设置</span>
         <span class="settings-arrow">→</span>
       </button>
     </div>
 
     <!-- 底部 -->
     <footer class="popup-footer">
-      <span class="footer-text">v1.0.0 · 本地设置 · 快速响应</span>
+      <span class="footer-text" data-i18n="popupFooter">v1.1.0 · 本地设置 · 快速响应</span>
     </footer>
   </div>
 
+  <script src="i18n.js"></script>
   <script src="settings.js"></script>
   <script src="popup.js"></script>
 </body>

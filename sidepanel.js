@@ -55,11 +55,19 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 const Prompts = globalThis.ShadowScholarPrompts;
 const Settings = globalThis.ShadowScholarSettings;
-const MODE_META = Object.freeze({
-  answer: { label: '🎯 答案模式', badgeClass: '' },
-  idea: { label: '💡 思路模式', badgeClass: 'idea' },
-  personality: { label: '🧭 性格测试模式', badgeClass: 'personality' }
-});
+const I18n = globalThis.ShadowScholarI18n;
+let MODE_META = {
+  answer: { label: '🎯 Answer Mode', badgeClass: '' },
+  idea: { label: '💡 Idea Mode', badgeClass: 'idea' },
+  personality: { label: '📸 Screenshot Mode', badgeClass: 'personality' }
+};
+function refreshModeMeta() {
+  MODE_META = {
+    answer: { label: I18n.t('modeAnswer'), badgeClass: '' },
+    idea: { label: I18n.t('modeIdea'), badgeClass: 'idea' },
+    personality: { label: I18n.t('modeScreenshot'), badgeClass: 'personality' }
+  };
+}
 
 const elements = {
   chatArea: $('#chat-area'),
@@ -102,8 +110,11 @@ const importedInlineRecordIds = new Set();
 // ============================
 // 初始化
 // ============================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   log('Side Panel 开始初始化');
+  await I18n.initI18n();
+  refreshModeMeta();
+  I18n.applyI18n();
   loadSettings();
   setupEventListeners();
   setupMarkdown();
@@ -173,10 +184,10 @@ function updateConnectionStatus() {
     if (!statusEl) return;
     if (result.apiKey) {
       statusEl.classList.add('connected');
-      statusEl.title = '✅ API 已连接';
+      statusEl.title = I18n.t('statusConnected');
     } else {
       statusEl.classList.remove('connected');
-      statusEl.title = '⚠️ 未配置 API Key，点击设置';
+      statusEl.title = I18n.t('statusNotConnected');
     }
   });
 }
@@ -255,7 +266,7 @@ async function checkPendingQuery() {
         if (record?.id) acknowledgeInlineRecord(record.id);
       });
       if (importedCount > 0) {
-        showToast(`已导入 ${importedCount} 条内联问答记录`, 'success');
+        showToast(I18n.t('toastImportedRecords', importedCount), 'success');
       }
     }
     
@@ -366,7 +377,7 @@ function switchMode(mode) {
     updateModeBadge(mode);
     setSystemPromptEditorMode(mode, { preserveDraft: true });
     const label = (MODE_META[mode] || MODE_META.answer).label;
-    showToast(`已切换到${label}`, 'success');
+    showToast(I18n.t('toastModeSwitched', label), 'success');
     log('模式已切换:', mode);
   });
 }
@@ -401,11 +412,11 @@ function setSystemPromptEditorMode(mode, { preserveDraft = false } = {}) {
   settingPromptMode = mode || 'answer';
   const systemPrompts = Settings.normalizeSystemPrompts(currentSettings);
   elements.settingSystemPrompt.value = systemPrompts[settingPromptMode] || '';
-  elements.settingSystemPrompt.placeholder = `${getModeLabel(settingPromptMode)}的 System Prompt`;
+  elements.settingSystemPrompt.placeholder = I18n.t('systemPromptFor', getModeLabel(settingPromptMode));
 
   const label = document.querySelector('label[for="setting-system-prompt"]');
   if (label) {
-    label.textContent = `System Prompt · ${getModeLabel(settingPromptMode)}`;
+    label.textContent = I18n.t('systemPromptLabel', getModeLabel(settingPromptMode));
   }
 }
 
@@ -458,8 +469,8 @@ function importInlineAnswerRecord(record, { silent = false } = {}) {
   importedInlineRecordIds.add(record.id);
 
   const label = record.mode === 'personality'
-    ? 'WEBテスト（SPI）性格検査'
-    : '页面内问答';
+    ? I18n.t('labelScreenshotQA')
+    : I18n.t('labelInlineQA');
   const userContent = `[${label}]\n\n${question}`;
 
   elements.welcome.classList.add('hidden');
@@ -475,7 +486,7 @@ function importInlineAnswerRecord(record, { silent = false } = {}) {
   });
 
   if (!silent) {
-    showToast(record.auto ? '性格测试问答已自动同步' : '问答已同步到侧边栏', 'success');
+    showToast(record.auto ? I18n.t('toastScreenshotSynced') : I18n.t('toastSyncedToSidebar'), 'success');
   }
 
   scrollToBottom();
@@ -524,21 +535,21 @@ async function analyzeContent(type) {
 
   try {
     if (currentSettings.mode === 'personality') {
-      showToast('正在截取当前浏览器画面...');
+      showToast(I18n.t('toastCapturing'));
       const prompt = type === 'selection'
-        ? '请根据当前浏览器截图回答性格测试题，优先关注当前选中区域附近的题目。'
-        : '请根据当前浏览器截图回答性格测试题。';
+        ? I18n.t('promptScreenshotSelection')
+        : I18n.t('promptScreenshotPage');
       sendMessage(prompt, { useScreenshot: true });
       return;
     }
 
     if (type === 'page') {
-      showToast('正在获取页面内容...');
+      showToast(I18n.t('toastFetchingPage'));
       chrome.runtime.sendMessage({ type: 'get-page-content' }, (response) => {
         log('页面内容响应:', response ? 'OK' : 'null', chrome.runtime.lastError?.message || '');
         if (chrome.runtime.lastError) {
           logError('获取页面内容错误:', chrome.runtime.lastError.message);
-          showToast('获取页面内容失败: ' + chrome.runtime.lastError.message, 'error');
+          showToast(I18n.t('toastPageContentError', chrome.runtime.lastError.message), 'error');
           return;
         }
         if (response && response.content) {
@@ -547,7 +558,7 @@ async function analyzeContent(type) {
             content: response.content
           }));
         } else {
-          showToast('获取页面内容失败，请确保当前页面不是浏览器内部页面', 'error');
+          showToast(I18n.t('toastPageContentEmpty'), 'error');
           logError('页面内容为空');
         }
       });
@@ -556,19 +567,19 @@ async function analyzeContent(type) {
         log('选中文字响应:', response ? `text="${response.text?.substring(0, 50)}"` : 'null');
         if (chrome.runtime.lastError) {
           logError('获取选中文字错误:', chrome.runtime.lastError.message);
-          showToast('获取选中文字失败', 'error');
+          showToast(I18n.t('toastSelectionError'), 'error');
           return;
         }
         if (response && response.text && response.text.trim()) {
           sendMessage(Prompts.buildSelectionAnalysisPrompt(response.text));
         } else {
-          showToast('请先在页面中选中文字', 'error');
+          showToast(I18n.t('toastSelectFirst'), 'error');
         }
       });
     }
   } catch (e) {
     logError('分析内容异常:', e.message);
-    showToast('操作失败: ' + e.message, 'error');
+    showToast(I18n.t('toastOperationFailed', e.message), 'error');
   }
 }
 
@@ -705,7 +716,7 @@ function addMessage(role, content) {
     <div class="message-bubble">
       <div class="message-content">${renderedContent}</div>
       <div class="message-actions">
-        <button class="message-action-btn" onclick="copyMessageContent(this)" title="复制">📋</button>
+        <button class="message-action-btn" onclick="copyMessageContent(this)" title="${I18n.t('btnCopyTitle')}">📋</button>
       </div>
     </div>
   `;
@@ -736,7 +747,7 @@ function clearConversation() {
   }
 
   log('对话已清除');
-  showToast('对话已清除', 'success');
+  showToast(I18n.t('toastConversationCleared'), 'success');
 }
 
 function scrollToBottom() {
@@ -782,15 +793,15 @@ function addCopyButtonsToCode(container) {
 
     const btn = document.createElement('button');
     btn.className = 'code-copy-btn';
-    btn.textContent = '复制';
+    btn.textContent = I18n.t('btnCopy');
     btn.addEventListener('click', () => {
       const code = pre.querySelector('code');
       const text = code ? code.textContent : pre.textContent;
       navigator.clipboard.writeText(text).then(() => {
-        btn.textContent = '已复制 ✓';
+        btn.textContent = I18n.t('btnCopied');
         btn.classList.add('copied');
         setTimeout(() => {
-          btn.textContent = '复制';
+          btn.textContent = I18n.t('btnCopy');
           btn.classList.remove('copied');
         }, 2000);
       });
@@ -805,7 +816,7 @@ window.copyMessageContent = function(btn) {
   const content = bubble.querySelector('.message-content');
   const text = content.textContent || content.innerText;
   navigator.clipboard.writeText(text).then(() => {
-    showToast('已复制到剪贴板', 'success');
+    showToast(I18n.t('toastCopied'), 'success');
   });
 };
 
@@ -856,6 +867,8 @@ function loadSettings() {
       elements.settingModel.value = settings.model;
       elements.settingAntiDetect.checked = settings.antiDetect;
       setSystemPromptEditorMode(settingPromptMode);
+      const langSelect = document.getElementById('setting-language');
+      if (langSelect) langSelect.value = settings.language || I18n.detectLanguage();
       log('设置已加载:', {
         apiUrl: maskUrlForLog(settings.apiUrl),
         model: settings.model,
@@ -870,6 +883,7 @@ function loadSettings() {
 function saveSettings() {
   rememberSystemPromptDraft();
   const systemPrompts = Settings.normalizeSystemPrompts(currentSettings);
+  const newLang = document.getElementById('setting-language')?.value || '';
   const settings = {
     apiUrl: elements.settingApiUrl.value.trim(),
     apiKey: elements.settingApiKey.value.trim(),
@@ -877,15 +891,19 @@ function saveSettings() {
     systemPrompt: systemPrompts.answer,
     systemPrompts,
     antiDetect: elements.settingAntiDetect.checked,
+    language: newLang,
   };
 
   chrome.storage.local.set(settings, () => {
     currentSettings = Settings.normalizeSettings({ ...currentSettings, ...settings });
     log('设置已保存');
-    const suffix = settings.antiDetect ? '' : '，反检测关闭后需刷新页面';
-    showToast(`设置已保存 ✓${suffix}`, 'success');
+    const suffix = settings.antiDetect ? '' : I18n.t('toastAntiDetectHint');
+    showToast(I18n.t('toastSettingsSaved') + suffix, 'success');
     updateConnectionStatus();
     closeSettings();
+    if (newLang && newLang !== (currentSettings.language || I18n.detectLanguage())) {
+      showToast(I18n.t('toastLanguageChanged'), 'success');
+    }
   });
 }
 
@@ -903,10 +921,10 @@ function setupDebugLogViewer() {
       if (debugLogsDiv.style.display === 'none') {
         debugLogsDiv.style.display = 'block';
         loadDebugLogs();
-        btnShowLogs.textContent = '🔍 隐藏调试日志';
+        btnShowLogs.textContent = I18n.t('btnHideLogs');
       } else {
         debugLogsDiv.style.display = 'none';
-        btnShowLogs.textContent = '🔍 查看调试日志';
+        btnShowLogs.textContent = I18n.t('btnShowLogs');
       }
     });
   }
@@ -914,8 +932,8 @@ function setupDebugLogViewer() {
   if (btnClearLogs) {
     btnClearLogs.addEventListener('click', () => {
       chrome.runtime.sendMessage({ type: 'clear-debug-logs' }, () => {
-        if (debugLogsContent) debugLogsContent.innerHTML = '<span style="color: #22c55e;">日志已清除</span>';
-        showToast('调试日志已清除', 'success');
+        if (debugLogsContent) debugLogsContent.innerHTML = '<span style="color: #22c55e;">' + I18n.t('logsCleared') + '</span>';
+        showToast(I18n.t('toastLogsCleared'), 'success');
       });
     });
   }
@@ -928,7 +946,7 @@ function loadDebugLogs() {
   chrome.storage.local.get('debugLogs', (result) => {
     const logs = result.debugLogs || [];
     if (logs.length === 0) {
-      debugLogsContent.innerHTML = '<span style="color: var(--text-tertiary);">暂无日志</span>';
+      debugLogsContent.innerHTML = '<span style="color: var(--text-tertiary);">' + I18n.t('logsEmpty') + '</span>';
       return;
     }
 

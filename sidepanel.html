@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>影学者</title>
+  <title data-i18n="appName">影学者</title>
   <link rel="stylesheet" href="sidepanel.css">
 </head>
 <body>
@@ -13,24 +13,24 @@
       <div class="topbar-left">
         <div class="logo">
           <span class="logo-icon">🥷</span>
-          <span class="logo-text">影学者</span>
+          <span class="logo-text" data-i18n="appName">影学者</span>
         </div>
-        <div class="topbar-status" id="topbar-status" title="未配置 API Key">
+        <div class="topbar-status" id="topbar-status" data-i18n-title="statusNotConfigured" title="未配置 API Key">
           <span class="topbar-status-dot"></span>
         </div>
       </div>
       <div class="topbar-mode" id="topbar-mode">
-        <button class="topbar-mode-btn active" data-mode="answer" id="sp-mode-answer" title="答案模式：直接给完整答案">🎯</button>
-        <button class="topbar-mode-btn" data-mode="idea" id="sp-mode-idea" title="思路模式：只给解题思路">💡</button>
-        <button class="topbar-mode-btn" data-mode="personality" id="sp-mode-personality" title="性格测试模式：截图读取当前页面，先给答案再翻译题目">🧭</button>
+        <button class="topbar-mode-btn active" data-mode="answer" id="sp-mode-answer" data-i18n-title="modeAnswerTitle" title="答案模式：直接给完整答案">🎯</button>
+        <button class="topbar-mode-btn" data-mode="idea" id="sp-mode-idea" data-i18n-title="modeIdeaTitle" title="思路模式：只给解题思路">💡</button>
+        <button class="topbar-mode-btn" data-mode="personality" id="sp-mode-personality" data-i18n-title="modeScreenshotTitle" title="截图模式：截图读取当前页面，先给答案再翻译题目">📸</button>
       </div>
       <div class="topbar-right">
-        <button class="icon-btn" id="btn-clear" title="清除对话">
+        <button class="icon-btn" id="btn-clear" data-i18n-title="btnClearTitle" title="清除对话">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
           </svg>
         </button>
-        <button class="icon-btn" id="btn-settings" title="设置">
+        <button class="icon-btn" id="btn-settings" data-i18n-title="btnSettingsTitle" title="设置">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
           </svg>
@@ -42,7 +42,7 @@
     <div class="settings-overlay" id="settings-overlay">
       <div class="settings-panel" id="settings-panel">
         <div class="settings-header">
-          <h2>⚙️ 设置</h2>
+          <h2 data-i18n="settingsTitle">⚙️ 设置</h2>
           <button class="icon-btn" id="btn-close-settings">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -51,15 +51,15 @@
         </div>
         <div class="settings-body">
           <div class="form-group">
-            <label for="setting-api-url">API 地址</label>
+            <label for="setting-api-url" data-i18n="settingApiUrl">API 地址</label>
             <input type="url" id="setting-api-url" placeholder="https://api.openai.com/v1" class="form-input">
-            <span class="form-hint">默认使用 OpenAI；也支持其他 OpenAI 兼容端点，自动补全 /chat/completions 路径</span>
+            <span class="form-hint" data-i18n="settingApiUrlHint">默认使用 OpenAI；也支持其他 OpenAI 兼容端点，自动补全 /chat/completions 路径</span>
           </div>
           <div class="form-group">
-            <label for="setting-api-key">API Key</label>
+            <label for="setting-api-key" data-i18n="settingApiKey">API Key</label>
             <div class="input-with-toggle">
               <input type="password" id="setting-api-key" placeholder="sk-..." class="form-input">
-              <button class="toggle-visibility" id="toggle-key-visibility" title="显示/隐藏">
+              <button class="toggle-visibility" id="toggle-key-visibility" data-i18n-title="settingToggleVisibility" title="显示/隐藏">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                 </svg>
@@ -67,30 +67,38 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="setting-model">模型名称</label>
+            <label for="setting-model" data-i18n="settingModel">模型名称</label>
             <input type="text" id="setting-model" placeholder="openai/gpt-5.4-mini" class="form-input">
-            <span class="form-hint">如 openai/gpt-5.4-mini, deepseek-chat, gpt-4o 等</span>
+            <span class="form-hint" data-i18n="settingModelHint">如 openai/gpt-5.4-mini, deepseek-chat, gpt-4o 等</span>
           </div>
           <div class="form-group">
-            <label for="setting-system-prompt">System Prompt</label>
-            <textarea id="setting-system-prompt" rows="3" class="form-input form-textarea" placeholder="你是影学者，一个强大的AI助手..."></textarea>
+            <label for="setting-system-prompt" data-i18n="settingSystemPrompt">System Prompt</label>
+            <textarea id="setting-system-prompt" rows="3" class="form-input form-textarea" data-i18n-placeholder="settingSystemPromptPlaceholder" placeholder="你是影学者，一个强大的AI助手..."></textarea>
           </div>
           <div class="form-group">
             <label class="toggle-label">
-              <span>反检测模式</span>
+              <span data-i18n="settingAntiDetect">反检测模式</span>
               <div class="toggle-switch">
                 <input type="checkbox" id="setting-anti-detect" checked>
                 <span class="toggle-slider"></span>
               </div>
             </label>
-            <span class="form-hint">突破页面焦点检测、可见性检测等限制</span>
+            <span class="form-hint" data-i18n="settingAntiDetectHint">突破页面焦点检测、可见性检测等限制</span>
           </div>
-          <button class="btn btn-primary btn-save" id="btn-save-settings">保存设置</button>
+          <div class="form-group">
+            <label for="setting-language" data-i18n="settingLanguage">语言 / Language</label>
+            <select id="setting-language" class="form-input">
+              <option value="zh">中文</option>
+              <option value="en">English</option>
+            </select>
+            <span class="form-hint" data-i18n="settingLanguageHint">切换后重新打开面板生效</span>
+          </div>
+          <button class="btn btn-primary btn-save" id="btn-save-settings" data-i18n="btnSaveSettings">保存设置</button>
           
           <!-- 调试日志 -->
           <div class="debug-section">
-            <button class="btn btn-debug" id="btn-show-logs">🔍 查看调试日志</button>
-            <button class="btn btn-debug btn-danger" id="btn-clear-logs">🗑️ 清除日志</button>
+            <button class="btn btn-debug" id="btn-show-logs" data-i18n="btnShowLogs">🔍 查看调试日志</button>
+            <button class="btn btn-debug btn-danger" id="btn-clear-logs" data-i18n="btnClearLogs">🗑️ 清除日志</button>
             <div class="debug-logs" id="debug-logs" style="display: none;">
               <pre id="debug-logs-content"></pre>
             </div>
@@ -104,17 +112,17 @@
       <!-- 欢迎界面 -->
       <div class="welcome" id="welcome">
         <div class="welcome-icon">🥷</div>
-        <h2 class="welcome-title">影学者</h2>
-        <p class="welcome-desc">你的智能浏览器助手</p>
+        <h2 class="welcome-title" data-i18n="welcomeTitle">影学者</h2>
+        <p class="welcome-desc" data-i18n="welcomeDesc">你的智能浏览器助手</p>
         <div class="mode-badge" id="mode-badge">🎯 答案模式</div>
         <div class="quick-actions">
           <button class="quick-action-btn" id="btn-analyze-page">
             <span class="quick-action-icon">📄</span>
-            <span class="quick-action-text">分析当前页面</span>
+            <span class="quick-action-text" data-i18n="btnAnalyzePage">分析当前页面</span>
           </button>
           <button class="quick-action-btn" id="btn-analyze-selection">
             <span class="quick-action-icon">✂️</span>
-            <span class="quick-action-text">分析选中内容</span>
+            <span class="quick-action-text" data-i18n="btnAnalyzeSelection">分析选中内容</span>
           </button>
         </div>
       </div>
@@ -134,20 +142,20 @@
     <!-- 底部输入区域 -->
     <footer class="input-area" id="input-area">
       <div class="input-actions">
-        <button class="input-action-btn" id="btn-quick-page" title="分析页面">
+        <button class="input-action-btn" id="btn-quick-page" data-i18n-title="btnQuickPageTitle" title="分析页面">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
           </svg>
         </button>
-        <button class="input-action-btn" id="btn-quick-selection" title="分析选中">
+        <button class="input-action-btn" id="btn-quick-selection" data-i18n-title="btnQuickSelectionTitle" title="分析选中">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
           </svg>
         </button>
       </div>
       <div class="input-wrapper">
-        <textarea id="input-text" placeholder="输入消息..." rows="1"></textarea>
-        <button class="send-btn" id="btn-send" title="发送">
+        <textarea id="input-text" data-i18n-placeholder="inputPlaceholder" placeholder="输入消息..." rows="1"></textarea>
+        <button class="send-btn" id="btn-send" data-i18n-title="btnSendTitle" title="发送">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
           </svg>
@@ -156,6 +164,7 @@
     </footer>
   </div>
 
+  <script src="i18n.js"></script>
   <script src="prompts.js"></script>
   <script src="settings.js"></script>
   <script src="lib/marked.min.js"></script>

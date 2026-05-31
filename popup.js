@@ -1,16 +1,15 @@
 /**
  * 影学者 - Popup 逻辑 (极简版)
  * 一个入口：打开侧边面板
- * 模式切换：答案模式 / 思路模式 / 性格测试模式
+ * 模式切换：答案模式 / 思路模式 / 截图模式
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const Settings = globalThis.ShadowScholarSettings;
-  const modeHints = {
-    answer: '直接给出完整答案',
-    idea: '只给解题思路，适合有回放检测的平台',
-    personality: '截图读取当前页面，先给答案再翻译题目'
-  };
+  const I18n = globalThis.ShadowScholarI18n;
+
+  await I18n.initI18n();
+  I18n.applyI18n();
 
   // 检查 API 配置状态 & 当前模式
   chrome.storage.local.get(Settings.SETTINGS_KEYS, (result) => {
@@ -19,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusText = statusBadge.querySelector('.status-text');
     if (settings.apiKey) {
       statusBadge.classList.add('connected');
-      statusText.textContent = '已连接';
+      statusText.textContent = I18n.t('popupStatusConnected');
     }
     document.getElementById('toggle-anti-detect').checked = settings.antiDetect;
 
@@ -32,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
-    document.getElementById('mode-hint').textContent = modeHints[mode] || '';
+    const hintKey = mode === 'idea' ? 'hintIdea' : mode === 'personality' ? 'hintScreenshot' : 'hintAnswer';
+    document.getElementById('mode-hint').textContent = I18n.t(hintKey);
   }
 
   document.querySelectorAll('.mode-btn').forEach((btn) => {

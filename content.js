@@ -9,6 +9,7 @@
 
 const Extractors = globalThis.ShadowScholarExtractors;
 const Prompts = globalThis.ShadowScholarPrompts;
+const I18n = globalThis.ShadowScholarI18n;
 
 // ============================
 // 消息监听（保留原有功能）
@@ -26,7 +27,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // 浮动快捷按钮 + 内联答题面板
 // 使用 Shadow DOM 隔离样式
 // ============================
-(() => {
+(async () => {
+  await I18n.initI18n();
   console.log('%c🥷 影学者 内容脚本已加载', 'color: #a78bfa; font-size: 14px; font-weight: bold;');
 
   // 等待 body 就绪
@@ -71,14 +73,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       box-shadow: 0 2px 8px rgba(245,158,11,0.35), inset 0 1px 1px rgba(255,255,255,0.2);
     }
     .ninja-fab.personality-mode {
-      width: 28px;
+      width: 24px;
       height: 24px;
-      border-radius: 8px;
+      border-radius: 50%;
       background: linear-gradient(135deg, #db2777, #f97316);
       border-color: rgba(251,113,133,0.55);
-      color: #fff7ed;
-      font-size: 12px;
-      font-weight: 800;
+      font-size: 13px;
       line-height: 22px;
       box-shadow: 0 2px 9px rgba(219,39,119,0.42), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 1px rgba(255,255,255,0.24);
       opacity: 0.72;
@@ -308,7 +308,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const fab = document.createElement('div');
   fab.className = 'ninja-fab';
   fab.textContent = '🥷';
-  fab.title = '影学者 - 解答这道题';
+  fab.title = I18n.t('fabTitleDefault');
   shadow.appendChild(fab);
 
   // 根据模式更新浮动按钮样式
@@ -319,14 +319,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (currentMode === 'idea') {
       fab.classList.add('idea-mode');
       fab.textContent = '💡';
-      fab.title = '影学者 - 💡 思路模式';
+      fab.title = I18n.t('fabTitleIdea');
     } else if (currentMode === 'personality') {
       fab.classList.add('personality-mode');
-      fab.textContent = '性';
-      fab.title = '影学者 - 🧭 性格测试模式';
+      fab.textContent = '📸';
+      fab.title = I18n.t('fabTitleScreenshot');
     } else {
       fab.textContent = '🥷';
-      fab.title = '影学者 - 🎯 答案模式';
+      fab.title = I18n.t('fabTitleAnswer');
     }
   }
   // 初始化
@@ -344,13 +344,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   panel.className = 'ninja-panel';
   panel.innerHTML = `
     <div class="ninja-panel-header">
-      <div class="ninja-panel-title">🥷 影学者</div>
-      <div class="ninja-panel-close" title="关闭">✕</div>
+      <div class="ninja-panel-title">${I18n.t('panelTitleDefault')}</div>
+      <div class="ninja-panel-close" title="${I18n.t('panelClose')}">✕</div>
     </div>
     <div class="ninja-panel-body"></div>
     <div class="ninja-panel-footer">
-      <div class="ninja-panel-btn" data-action="copy">📋 复制</div>
-      <div class="ninja-panel-btn" data-action="sidebar">📌 发到侧边栏</div>
+      <div class="ninja-panel-btn" data-action="copy">${I18n.t('panelBtnCopy')}</div>
+      <div class="ninja-panel-btn" data-action="sidebar">${I18n.t('panelBtnSidebar')}</div>
     </div>
   `;
   shadow.appendChild(panel);
@@ -461,11 +461,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     currentSidebarRecordId = '';
     currentSidebarSent = false;
     panelTitle.textContent = currentQuestionMode === 'personality'
-      ? '🧭 性格测试'
-      : '🥷 影学者';
+      ? I18n.t('panelTitleScreenshot')
+      : I18n.t('panelTitleDefault');
     btnSidebar.textContent = currentQuestionMode === 'personality'
-      ? '🧭 自动同步'
-      : '📌 发到侧边栏';
+      ? I18n.t('panelBtnAutoSync')
+      : I18n.t('panelBtnSidebar');
   }
 
   function hidePanel() {
@@ -486,8 +486,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     e.stopPropagation();
     if (!currentAnswer) return;
     navigator.clipboard.writeText(currentAnswer).then(() => {
-      btnCopy.textContent = '✅ 已复制';
-      setTimeout(() => { btnCopy.textContent = '📋 复制'; }, 1500);
+      btnCopy.textContent = I18n.t('panelBtnCopied');
+      setTimeout(() => { btnCopy.textContent = I18n.t('panelBtnCopy'); }, 1500);
     });
   });
 
@@ -529,7 +529,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   function askQuestion(text) {
     // 先检查扩展上下文是否有效
     if (!chrome.runtime?.id) {
-      panelBody.innerHTML = `<p style="color:#f87171;">⚠️ 扩展已更新，请<strong>刷新此页面</strong>后重试（Ctrl+R）</p>`;
+      panelBody.innerHTML = `<p style="color:#f87171;">${I18n.t('panelErrorInvalidated')}</p>`;
       return;
     }
 
@@ -537,7 +537,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const useScreenshot = questionMode === 'personality';
     const prompt = useScreenshot ? text : Prompts.buildAnswerPrompt(text);
     currentQuestionText = useScreenshot
-      ? `当前浏览器截图${text ? `\n\n辅助文字：\n${text}` : ''}`
+      ? `${I18n.t('panelScreenshotLabel')}${text ? `\n\n${I18n.t('panelScreenshotAux')}\n${text}` : ''}`
       : text;
 
     try {
@@ -566,9 +566,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         currentPort = null;
         // 如果还在加载中（没有收到内容），说明连接异常断开
         if (currentAnswer === '' && panelBody.querySelector('.ninja-loading')) {
-          const err = chrome.runtime.lastError?.message || '连接中断';
+          const err = chrome.runtime.lastError?.message || I18n.t('panelErrorDisconnected');
           panelBody.innerHTML = `<p style="color:#f87171;">⚠️ ${err}</p>
-            <p style="color:#94a3b8;font-size:12px;margin-top:6px;">请刷新页面后重试</p>`;
+            <p style="color:#94a3b8;font-size:12px;margin-top:6px;">${I18n.t('panelErrorRefresh')}</p>`;
         }
       });
 
@@ -580,7 +580,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } catch (e) {
       const msg = e.message || '';
       if (msg.includes('Extension context invalidated') || msg.includes('context')) {
-        panelBody.innerHTML = `<p style="color:#f87171;">⚠️ 扩展已更新，请<strong>刷新页面</strong>后重试</p>`;
+        panelBody.innerHTML = `<p style="color:#f87171;">${I18n.t('panelErrorExtUpdated')}</p>`;
       } else {
         panelBody.innerHTML = `<p style="color:#f87171;">❌ ${msg}</p>`;
       }
@@ -678,7 +678,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   function sendInlineAnswerToSidebar(question, answer, { auto = false, mode = currentMode } = {}) {
     if (currentSidebarSent) {
-      btnSidebar.textContent = '✅ 已同步';
+      btnSidebar.textContent = I18n.t('panelBtnSynced');
       return;
     }
 
@@ -697,10 +697,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         title: document.title,
         timestamp: Date.now()
       });
-      btnSidebar.textContent = auto ? '✅ 已自动同步' : '✅ 已发送';
+      btnSidebar.textContent = auto ? I18n.t('panelBtnAutoSynced') : I18n.t('panelBtnSent');
     } catch(e) {
       currentSidebarSent = false;
-      btnSidebar.textContent = '⚠️ 同步失败';
+      btnSidebar.textContent = I18n.t('panelBtnSyncFailed');
     }
   }
 
