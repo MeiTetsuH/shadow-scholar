@@ -18,7 +18,7 @@ async function panel() {
       postMessage(msg) { this.sent.push(msg); }, disconnect() { if (!this.closed) { this.closed = true; this.onDisconnect.emit(); } } };
     ports.push(p); return p;
   };
-  load(w, 'i18n.js', 'prompts.js', 'settings.js', 'lib/marked.min.js', 'markdown.js', 'sidepanel.js');
+  load(w, 'i18n.js', 'ui-icons.js', 'prompts.js', 'settings.js', 'lib/marked.min.js', 'markdown.js', 'sidepanel.js');
   await tick();
   return { instance, w, ports, copied: () => copied };
 }
@@ -56,4 +56,25 @@ test('Streaming render coalesces bursts rather than rebuilding for every token',
   for (let i = 0; i < 100; i++) p.ports[0].onMessage.emit({ type: 'chunk', content: 'word ' });
   await new Promise(resolve => setTimeout(resolve, 100)); assert.ok(renders <= 2, `rendered ${renders} times`);
   p.ports[0].onMessage.emit({ type: 'done' }); assert.equal(doc.querySelector('.message-ai .message-content').textContent.trim().split(' ').length, 100); p.instance.window.close();
+});
+test('Settings has keyboard containment and restores the triggering control', async () => {
+  const p = await panel(); const doc = p.w.document;
+  const trigger = doc.getElementById('btn-settings'); trigger.focus(); trigger.click();
+  assert.equal(doc.getElementById('settings-panel').getAttribute('role'), 'dialog');
+  assert.equal(doc.getElementById('chat-area').inert, true);
+  const close = doc.getElementById('btn-close-settings'), save = doc.getElementById('btn-save-settings');
+  assert.equal(doc.activeElement, close);
+  close.dispatchEvent(new p.w.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
+  assert.equal(doc.activeElement, save);
+  save.dispatchEvent(new p.w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert.equal(doc.getElementById('chat-area').inert, false); assert.equal(doc.activeElement, trigger);
+  p.instance.window.close();
+});
+test('Mode switches expose the selected state and keep the complete prompt label', async () => {
+  const p = await panel(); const doc = p.w.document;
+  doc.getElementById('sp-mode-idea').click();
+  assert.equal(doc.getElementById('sp-mode-idea').getAttribute('aria-pressed'), 'true');
+  assert.equal(doc.getElementById('sp-mode-answer').getAttribute('aria-pressed'), 'false');
+  assert.match(doc.querySelector('label[for="setting-system-prompt"]').textContent, /Guided thinking/);
+  p.instance.window.close();
 });

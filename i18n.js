@@ -73,6 +73,11 @@
       const msg = t(key);
       if (msg !== key) node.placeholder = msg;
     });
+    el.querySelectorAll('[data-i18n-aria]').forEach(node => {
+      const key = node.getAttribute('data-i18n-aria');
+      const msg = t(key);
+      if (msg !== key) node.setAttribute('aria-label', msg);
+    });
     el.querySelectorAll('[data-i18n-title]').forEach((node) => {
       const key = node.getAttribute('data-i18n-title');
       const msg = t(key);

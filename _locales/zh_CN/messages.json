@@ -10,37 +10,37 @@
     "message": "影学者"
   },
   "welcomeTitle": {
-    "message": "影学者"
+    "message": "把好奇心，\n留在这一页。"
   },
   "welcomeDesc": {
-    "message": "你的智能浏览器助手"
+    "message": "选中一段文字，读懂一个观点。\n在阅读发生的地方，让理解慢慢展开。"
   },
   "modeAnswer": {
-    "message": "🎯 答案模式"
+    "message": "解读模式"
   },
   "modeIdea": {
-    "message": "💡 思路模式"
+    "message": "思路模式"
   },
   "modeScreenshot": {
-    "message": "📸 截图模式"
+    "message": "截图模式"
   },
   "modeAnswerShort": {
-    "message": "🎯 答案"
+    "message": "解读"
   },
   "modeIdeaShort": {
-    "message": "💡 思路"
+    "message": "思路"
   },
   "modeScreenshotShort": {
-    "message": "📸 截图"
+    "message": "截图"
   },
   "modeAnswerTitle": {
-    "message": "答案模式：直接给完整答案"
+    "message": "解读模式：解释内容并给出完整回答"
   },
   "modeIdeaTitle": {
     "message": "思路模式：只给解题思路"
   },
   "modeScreenshotTitle": {
-    "message": "截图模式：截图读取当前页面，先给答案再翻译题目"
+    "message": "截图模式：把当前可见网页发送给所选模型解读"
   },
   "hintAnswer": {
     "message": "直接给出完整答案"
@@ -49,13 +49,13 @@
     "message": "给出引导思路与简短示例"
   },
   "hintScreenshot": {
-    "message": "截图读取当前页面，先给答案再翻译题目"
+    "message": "使用支持图像的模型解读当前可见网页"
   },
   "statusNotConfigured": {
     "message": "未配置 API Key"
   },
   "statusConnected": {
-    "message": "已配置 API 密钥（尚未测试连接）"
+    "message": "服务已配置，尚未测试连接"
   },
   "statusNotConnected": {
     "message": "请在设置中配置 AI 服务"
@@ -67,7 +67,7 @@
     "message": "设置"
   },
   "settingsTitle": {
-    "message": "⚙️ 设置"
+    "message": "阅读设置"
   },
   "settingApiUrl": {
     "message": "API 地址"
@@ -115,19 +115,19 @@
     "message": "保存设置"
   },
   "btnShowLogs": {
-    "message": "🔍 查看调试日志"
+    "message": "查看调试日志"
   },
   "btnHideLogs": {
-    "message": "🔍 隐藏调试日志"
+    "message": "隐藏调试日志"
   },
   "btnClearLogs": {
-    "message": "🗑️ 清除日志"
+    "message": "清除日志"
   },
   "btnAnalyzePage": {
-    "message": "分析当前页面"
+    "message": "读懂当前页面"
   },
   "btnAnalyzeSelection": {
-    "message": "分析选中内容"
+    "message": "解释选中文字"
   },
   "btnQuickPageTitle": {
     "message": "分析页面"
@@ -136,7 +136,7 @@
     "message": "分析选中"
   },
   "inputPlaceholder": {
-    "message": "输入消息..."
+    "message": "这一页，有什么想进一步了解？"
   },
   "btnSendTitle": {
     "message": "发送"
@@ -256,7 +256,7 @@
     "message": "日志已清除"
   },
   "contextMenuAnswer": {
-    "message": "🥷 解答这道题"
+    "message": "用影学者解释"
   },
   "fabTitleDefault": {
     "message": "影学者 - 解答这道题"
@@ -271,40 +271,40 @@
     "message": "影学者 - 📸 截图模式"
   },
   "panelTitleDefault": {
-    "message": "🥷 影学者"
+    "message": "影学者"
   },
   "panelTitleScreenshot": {
-    "message": "📸 截图模式"
+    "message": "截图模式"
   },
   "panelClose": {
     "message": "关闭"
   },
   "panelBtnCopy": {
-    "message": "📋 复制"
+    "message": "复制"
   },
   "panelBtnCopied": {
-    "message": "✅ 已复制"
+    "message": "已复制"
   },
   "panelBtnSidebar": {
-    "message": "📌 发到侧边栏"
+    "message": "发到侧边栏"
   },
   "panelBtnAutoSync": {
-    "message": "📸 自动同步"
+    "message": "自动同步"
   },
   "panelBtnSynced": {
-    "message": "✅ 已同步"
+    "message": "已同步"
   },
   "panelBtnSent": {
-    "message": "✅ 已发送"
+    "message": "已发送"
   },
   "panelBtnAutoSynced": {
-    "message": "✅ 已自动同步"
+    "message": "已自动同步"
   },
   "panelBtnSyncFailed": {
-    "message": "⚠️ 同步失败"
+    "message": "同步失败"
   },
   "panelErrorInvalidated": {
-    "message": "⚠️ 扩展已更新，请刷新此页面后重试（Ctrl+R）"
+    "message": "扩展已更新，请刷新此页面后重试（Ctrl+R）"
   },
   "panelErrorRefresh": {
     "message": "请刷新页面后重试"
@@ -319,7 +319,7 @@
     "message": "辅助文字："
   },
   "panelErrorExtUpdated": {
-    "message": "⚠️ 扩展已更新，请刷新页面后重试"
+    "message": "扩展已更新，请刷新页面后重试"
   },
   "popupOpenPanel": {
     "message": "打开影学者"
@@ -328,13 +328,13 @@
     "message": "侧边面板 · 对话 & 答题"
   },
   "popupModeLabel": {
-    "message": "📋 模式"
+    "message": "模式"
   },
   "popupAntiDetect": {
-    "message": "🛡️ 文字选择辅助"
+    "message": "文字选择辅助"
   },
   "popupFullSettings": {
-    "message": "⚙️ 完整设置"
+    "message": "完整设置"
   },
   "popupStatusNotConfigured": {
     "message": "未配置"
@@ -343,7 +343,7 @@
     "message": "已配置"
   },
   "popupFooter": {
-    "message": "v1.1.0 · 本地设置 · 快速响应"
+    "message": "留一处安静，给理解。"
   },
   "dataDisclosure": {
     "message": "你请求 AI 帮助时，消息、对话上下文、选中或提取的网页文字，以及截图模式下当前标签页的可见截图，将发送至上方配置的 API 地址。服务商还会接收 API 密钥和 IP 地址等连接信息。截图可能包含页面上可见的个人信息。设置、最多 50 条内联问答和 100 条待同步记录保存在本机。开发者不会收到这些数据。服务商可能按其隐私政策保留请求。"
@@ -361,9 +361,63 @@
     "message": "本地问答历史和待处理请求已清除"
   },
   "dataNotice": {
-    "message": "AI 请求会将内容发送给你配置的服务商；截图模式会发送当前可见网页。可在设置中查看数据用途。"
+    "message": "内容发送至所选服务；截图模式包含当前可见网页。本机模型可让内容留在本机，详见设置。"
   },
   "apiKeyRetention": {
     "message": "API 密钥仅保存在本次浏览器会话内存中；重启 Chrome 或重新加载扩展后需重新填写。其他设置会保留。"
+  },
+  "quickPageDetail": {
+    "message": "提炼重点，梳理内容脉络"
+  },
+  "quickSelectionDetail": {
+    "message": "先在网页中选中你想理解的一段"
+  },
+  "welcomeNote": {
+    "message": "选择你信任的模型。可连接云端服务，也可使用本机 Ollama。"
+  },
+  "settingsService": {
+    "message": "连接 AI 服务"
+  },
+  "settingsReading": {
+    "message": "阅读偏好"
+  },
+  "settingsPrivacy": {
+    "message": "数据与授权"
+  },
+  "localModeTitle": {
+    "message": "想让内容留在本机？"
+  },
+  "localModeNote": {
+    "message": "可连接 http://localhost:11434/v1 的 Ollama 本地模型。服务在本机运行且不转发云端时，内容留在本机。"
+  },
+  "quickPageShort": {
+    "message": "页面"
+  },
+  "quickSelectionShort": {
+    "message": "选中"
+  },
+  "connectionSetup": {
+    "message": "配置 AI"
+  },
+  "connectionReady": {
+    "message": "已配置"
+  },
+  "connectionLocal": {
+    "message": "本机端点"
+  },
+  "inputLabel": {
+    "message": "输入你的问题"
+  },
+  "messageYou": {
+    "message": "你"
+  },
+  "modeNavigation": {
+    "message": "阅读模式"
+  },
+  "conversationLabel": {
+    "message": "对话记录"
+  },
+  "thinkingLabel": {
+    "message": "正在阅读与思考"
   }
 }

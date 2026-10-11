@@ -26,7 +26,7 @@ const en = JSON.parse(fs.readFileSync('_locales/en/messages.json'));
 const zh = JSON.parse(fs.readFileSync('_locales/zh_CN/messages.json'));
 assert.deepEqual(Object.keys(en).sort(), Object.keys(zh).sort());
 const sources = [...files, 'sidepanel.html', 'popup.html'].map(f => fs.readFileSync(f, 'utf8')).join('\n');
-for (const match of sources.matchAll(/(?:I18n\.t\(['"]|data-i18n(?:-title|-placeholder)?=")([^'"\s]+)['"]/g)) assert.ok(en[match[1]], `Missing translation: ${match[1]}`);
+for (const match of sources.matchAll(/(?:I18n\.t\(['"]|data-i18n(?:-title|-placeholder|-aria)?=")([^'"\s]+)['"]/g)) assert.ok(en[match[1]], `Missing translation: ${match[1]}`);
 assert.ok(en.extDescription.message.length <= 132);
 assert.ok(zh.extDescription.message.length <= 132);
 assert.equal(fs.readFileSync('lib/marked.min.js', 'utf8'), fs.readFileSync('node_modules/marked/lib/marked.umd.js', 'utf8'), 'Vendored Markdown must match the pinned package');

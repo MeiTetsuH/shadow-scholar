@@ -5,13 +5,16 @@ Select text for an explanation, summarize a webpage, or discuss it in a focused 
 Features
 • Floating selection action and right-click analysis.
 • Side-panel chat with streaming responses, Markdown, tables, and copy buttons.
-• Answer Mode for explanations and Idea Mode for guided hints.
+• Explanation Mode for explanations and Guided Thinking for hints.
 • Screenshot Mode for translating or explaining the visible webpage. Each request in this mode sends a fresh screenshot to your configured provider; a vision-capable model is required.
 • English and Chinese interfaces and editable mode-specific prompts.
 • Optional selection helper for copying, selection, and context menus outside editors. It does not modify pasting, focus, page visibility, timers, or JavaScript execution.
 
 Bring your own AI
 Configure an API URL, model ID, and API key for OpenAI, OpenRouter, DeepSeek, a compatible gateway, or a local server such as Ollama. The extension does not supply an AI account or API credits. Your provider may charge for requests. Remote endpoints require HTTPS; HTTP is supported only for a server on your own computer. Native Anthropic Messages endpoints are not supported.
+
+Local models and privacy
+When you connect Ollama or another model running on this computer and the server does not forward requests to the cloud, your submitted content and generated answers stay on this computer. A localhost address alone does not guarantee offline processing; check the local service and model configuration.
 
 Data use and your controls
 When you request AI help, selected or extracted page text, typed messages, conversation context, custom prompts, or the visible screenshot are sent directly to the endpoint you configure. That provider receives your API key and network metadata and may retain requests under its own policy. Screenshots can contain personal information visible on the page. Review the content before sending.
@@ -22,7 +25,7 @@ API keys are held only in browser session memory and must be entered again after
 
 Website access supports the floating interface, requested page extraction, screenshots, and custom AI endpoints. No automatic background page uploads occur. Some protected browser and store pages do not allow extensions.
 
-Version 1.2.0 improves streaming cancellation, final-chunk handling, clipboard compatibility, safe Markdown rendering, and rendering performance. It also adds clearer data disclosures and removes the hidden offscreen keep-alive page.
+Version 1.3.0 introduces a Japanese editorial interface, a new icon, clearer reading modes, keyboard-accessible Settings, and refreshed English/Chinese artwork. It retains the 1.2.0 improvements to streaming cancellation, final-chunk handling, clipboard compatibility, safe Markdown rendering, and rendering performance. It also adds clearer data disclosures and removes the hidden offscreen keep-alive page.
 
 Source and support: https://github.com/MeiTetsuH/shadow-scholar
 Privacy policy: https://github.com/MeiTetsuH/shadow-scholar/blob/master/PRIVACY.md

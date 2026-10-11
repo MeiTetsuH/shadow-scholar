@@ -1,175 +1,74 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="appName">影学者</title>
+  <title data-i18n="appName">Shadow Scholar</title>
   <link rel="stylesheet" href="sidepanel.css">
 </head>
 <body>
-  <div class="app" id="app">
-    <!-- 顶部导航栏 -->
-    <header class="topbar" id="topbar">
-      <div class="topbar-left">
-        <div class="logo">
-          <span class="logo-icon">🥷</span>
-          <span class="logo-text" data-i18n="appName">影学者</span>
-        </div>
-        <div class="topbar-status" id="topbar-status" data-i18n-title="statusNotConfigured" title="未配置 API Key">
-          <span class="topbar-status-dot"></span>
-        </div>
-      </div>
-      <div class="topbar-mode" id="topbar-mode">
-        <button class="topbar-mode-btn active" data-mode="answer" id="sp-mode-answer" data-i18n-title="modeAnswerTitle" title="答案模式：直接给完整答案">🎯</button>
-        <button class="topbar-mode-btn" data-mode="idea" id="sp-mode-idea" data-i18n-title="modeIdeaTitle" title="思路模式：只给解题思路">💡</button>
-        <button class="topbar-mode-btn" data-mode="personality" id="sp-mode-personality" data-i18n-title="modeScreenshotTitle" title="截图模式：截图读取当前页面，先给答案再翻译题目">📸</button>
-      </div>
-      <div class="topbar-right">
-        <button class="icon-btn" id="btn-clear" data-i18n-title="btnClearTitle" title="清除对话">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-          </svg>
-        </button>
-        <button class="icon-btn" id="btn-settings" data-i18n-title="btnSettingsTitle" title="设置">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-          </svg>
-        </button>
-      </div>
-    </header>
-
-    <!-- 设置面板 -->
-    <div class="settings-overlay" id="settings-overlay">
-      <div class="settings-panel" id="settings-panel">
-        <div class="settings-header">
-          <h2 data-i18n="settingsTitle">⚙️ 设置</h2>
-          <button class="icon-btn" id="btn-close-settings">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-        <div class="settings-body">
-          <div class="form-group">
-            <label for="setting-api-url" data-i18n="settingApiUrl">API 地址</label>
-            <input type="url" id="setting-api-url" placeholder="https://api.openai.com/v1" class="form-input">
-            <span class="form-hint" data-i18n="settingApiUrlHint">默认使用 OpenAI；也支持其他 OpenAI 兼容端点，自动补全 /chat/completions 路径</span>
-          </div>
-          <div class="form-group">
-            <label for="setting-api-key" data-i18n="settingApiKey">API Key</label>
-            <div class="input-with-toggle">
-              <input type="password" id="setting-api-key" placeholder="sk-..." class="form-input">
-              <button class="toggle-visibility" id="toggle-key-visibility" data-i18n-title="settingToggleVisibility" title="显示/隐藏">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-          <p class="form-hint" data-i18n="apiKeyRetention"></p>
-          <div class="form-group">
-            <label for="setting-model" data-i18n="settingModel">模型名称</label>
-            <input type="text" id="setting-model" placeholder="gpt-5.4-mini" class="form-input">
-            <span class="form-hint" data-i18n="settingModelHint">如 openai/gpt-5.4-mini, deepseek-chat, gpt-4o 等</span>
-          </div>
-          <div class="form-group">
-            <label for="setting-system-prompt" data-i18n="settingSystemPrompt">System Prompt</label>
-            <textarea id="setting-system-prompt" rows="3" class="form-input form-textarea" data-i18n-placeholder="settingSystemPromptPlaceholder" placeholder="你是影学者，一个强大的AI助手..."></textarea>
-          </div>
-          <div class="form-group">
-            <label class="toggle-label">
-              <span data-i18n="settingAntiDetect">反检测模式</span>
-              <div class="toggle-switch">
-                <input type="checkbox" id="setting-anti-detect">
-                <span class="toggle-slider"></span>
-              </div>
-            </label>
-            <span class="form-hint" data-i18n="settingAntiDetectHint">突破页面焦点检测、可见性检测等限制</span>
-          </div>
-          <div class="form-group">
-            <label for="setting-language" data-i18n="settingLanguage">语言 / Language</label>
-            <select id="setting-language" class="form-input">
-              <option value="zh">中文</option>
-              <option value="en">English</option>
-            </select>
-            <span class="form-hint" data-i18n="settingLanguageHint">切换后重新打开面板生效</span>
-          </div>
-          <div class="form-group privacy-disclosure">
-            <p data-i18n="dataDisclosure"></p>
-            <label><input type="checkbox" id="setting-data-consent"> <span data-i18n="dataConsent"></span></label>
-            <a href="https://github.com/MeiTetsuH/shadow-scholar/blob/master/PRIVACY.md" target="_blank" rel="noopener noreferrer" data-i18n="privacyPolicy"></a>
-          </div>
-          <button class="btn btn-debug" id="btn-clear-history" data-i18n="clearLocalHistory"></button>
-          <button class="btn btn-primary btn-save" id="btn-save-settings" data-i18n="btnSaveSettings">保存设置</button>
-          
-
-        </div>
-      </div>
+<div class="app" id="app">
+  <header class="topbar" id="topbar">
+    <div class="topbar-left"><div class="logo">
+      <img class="logo-icon" src="icons/icon48.png" alt="">
+      <div class="logo-type"><span class="logo-text" data-i18n="appName">Shadow Scholar</span><span class="logo-caption">A READING COMPANION</span></div>
+    </div></div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="btn-clear" data-i18n-title="btnClearTitle" title="Clear conversation"><span data-icon="clear"></span></button>
+      <button class="icon-btn" id="btn-settings" data-i18n-title="btnSettingsTitle" title="Settings"><span data-icon="settings"></span></button>
     </div>
-
-    <!-- 对话区域 -->
-    <main class="chat-area" id="chat-area">
-      <!-- 欢迎界面 -->
-      <div class="welcome" id="welcome">
-        <div class="welcome-icon">🥷</div>
-        <h2 class="welcome-title" data-i18n="welcomeTitle">影学者</h2>
-        <p class="welcome-desc" data-i18n="welcomeDesc">你的智能浏览器助手</p>
-        <div class="mode-badge" id="mode-badge">🎯 答案模式</div>
-        <div class="quick-actions">
-          <button class="quick-action-btn" id="btn-analyze-page">
-            <span class="quick-action-icon">📄</span>
-            <span class="quick-action-text" data-i18n="btnAnalyzePage">分析当前页面</span>
-          </button>
-          <button class="quick-action-btn" id="btn-analyze-selection">
-            <span class="quick-action-icon">✂️</span>
-            <span class="quick-action-text" data-i18n="btnAnalyzeSelection">分析选中内容</span>
-          </button>
-        </div>
+    <nav class="topbar-mode" id="topbar-mode" data-i18n-aria="modeNavigation" aria-label="Study mode">
+      <button class="topbar-mode-btn active" data-mode="answer" id="sp-mode-answer" aria-pressed="true" data-i18n-title="modeAnswerTitle"><span data-icon="book"></span><span data-i18n="modeAnswerShort">Explain</span></button>
+      <button class="topbar-mode-btn" data-mode="idea" id="sp-mode-idea" aria-pressed="false" data-i18n-title="modeIdeaTitle"><span data-icon="idea"></span><span data-i18n="modeIdeaShort">Explore</span></button>
+      <button class="topbar-mode-btn" data-mode="personality" id="sp-mode-personality" aria-pressed="false" data-i18n-title="modeScreenshotTitle"><span data-icon="camera"></span><span data-i18n="modeScreenshotShort">Capture</span></button>
+    </nav>
+  </header>
+  <div class="settings-overlay" id="settings-overlay">
+    <section class="settings-panel" id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <header class="settings-header"><div><small>YOUR READING DESK</small><h2 id="settings-title" data-i18n="settingsTitle">Settings</h2></div><button class="icon-btn" id="btn-close-settings" data-i18n-title="panelClose" title="Close"><span data-icon="close"></span></button></header>
+      <div class="settings-body">
+        <h3 class="settings-section-title"><span>01</span><span data-i18n="settingsService">Your AI service</span></h3>
+        <div class="form-group"><label for="setting-api-url" data-i18n="settingApiUrl">API URL</label><input type="url" id="setting-api-url" placeholder="https://api.openai.com/v1" class="form-input" spellcheck="false"><span class="form-hint" data-i18n="settingApiUrlHint"></span></div>
+        <div class="form-group"><label for="setting-api-key" data-i18n="settingApiKey">API Key</label><div class="input-with-toggle"><input type="password" id="setting-api-key" placeholder="sk-..." class="form-input" autocomplete="off" spellcheck="false"><button class="toggle-visibility" id="toggle-key-visibility" data-i18n-title="settingToggleVisibility" title="Show/Hide"><span data-icon="eye"></span></button></div><p class="form-hint" data-i18n="apiKeyRetention"></p></div>
+        <div class="form-group"><label for="setting-model" data-i18n="settingModel">Model</label><input type="text" id="setting-model" placeholder="gpt-5.4-mini" class="form-input" spellcheck="false"><span class="form-hint" data-i18n="settingModelHint"></span></div>
+        <aside class="local-note"><strong><span data-icon="monitor"></span><span data-i18n="localModeTitle">Prefer a local model?</span></strong><p data-i18n="localModeNote"></p></aside>
+        <h3 class="settings-section-title"><span>02</span><span data-i18n="settingsReading">Reading preferences</span></h3>
+        <div class="form-group"><label for="setting-system-prompt" data-i18n="settingSystemPrompt">System prompt</label><textarea id="setting-system-prompt" rows="4" class="form-input form-textarea" data-i18n-placeholder="settingSystemPromptPlaceholder"></textarea></div>
+        <div class="form-group"><label class="toggle-label"><span data-i18n="settingAntiDetect">Selection helper</span><span class="toggle-switch"><input type="checkbox" id="setting-anti-detect"><span class="toggle-slider"></span></span></label><span class="form-hint" data-i18n="settingAntiDetectHint"></span></div>
+        <div class="form-group"><label for="setting-language" data-i18n="settingLanguage">Language</label><select id="setting-language" class="form-input"><option value="zh">中文</option><option value="en">English</option></select><span class="form-hint" data-i18n="settingLanguageHint"></span></div>
+        <h3 class="settings-section-title"><span>03</span><span data-i18n="settingsPrivacy">Data & consent</span></h3>
+        <div class="form-group privacy-disclosure"><p data-i18n="dataDisclosure"></p><label><input type="checkbox" id="setting-data-consent"><span data-i18n="dataConsent"></span></label><a href="https://github.com/MeiTetsuH/shadow-scholar/blob/master/PRIVACY.md" target="_blank" rel="noopener noreferrer" data-i18n="privacyPolicy"></a></div>
+        <button class="btn btn-debug" id="btn-clear-history" data-i18n="clearLocalHistory"></button>
+        <button class="btn btn-primary btn-save" id="btn-save-settings" data-i18n="btnSaveSettings">Save settings</button>
       </div>
-
-      <!-- 消息列表 -->
-      <div class="messages" id="messages"></div>
-
-      <!-- 打字指示器 -->
-      <div class="typing-indicator" id="typing-indicator" style="display: none;">
-        <div class="typing-avatar">🥷</div>
-        <div class="typing-dots">
-          <span></span><span></span><span></span>
-        </div>
-      </div>
-    </main>
-
-    <!-- 底部输入区域 -->
-    <footer class="input-area" id="input-area">
-      <p class="data-notice" data-i18n="dataNotice"></p>
-      <div class="input-actions">
-        <button class="input-action-btn" id="btn-quick-page" data-i18n-title="btnQuickPageTitle" title="分析页面">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-          </svg>
-        </button>
-        <button class="input-action-btn" id="btn-quick-selection" data-i18n-title="btnQuickSelectionTitle" title="分析选中">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-          </svg>
-        </button>
-      </div>
-      <div class="input-wrapper">
-        <textarea id="input-text" data-i18n-placeholder="inputPlaceholder" placeholder="输入消息..." rows="1"></textarea>
-        <button class="send-btn" id="btn-send" data-i18n-title="btnSendTitle" title="发送">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-        </button>
-      </div>
-    </footer>
+    </section>
   </div>
-
-  <script src="i18n.js"></script>
-  <script src="prompts.js"></script>
-  <script src="settings.js"></script>
-  <script src="lib/marked.min.js"></script>
-  <script src="markdown.js"></script>
-  <script src="sidepanel.js"></script>
+  <main class="chat-area" id="chat-area">
+    <section class="welcome" id="welcome">
+      <div class="welcome-folio"><span>SHADOW SCHOLAR</span><span>読む、考える。</span></div>
+      <div class="welcome-art" aria-hidden="true"><img src="icons/icon128.png" alt=""><span class="bookmark"></span></div>
+      <h1 class="welcome-title" data-i18n="welcomeTitle">Stay curious.
+Stay on the page.</h1>
+      <p class="welcome-desc" data-i18n="welcomeDesc"></p>
+      <div class="mode-badge" id="mode-badge"></div>
+      <div class="quick-actions">
+        <button class="quick-action-btn" id="btn-analyze-page"><span class="quick-action-number">01</span><span><span class="quick-action-text" data-i18n="btnAnalyzePage">Read this page</span><span class="quick-action-detail" data-i18n="quickPageDetail"></span></span><span data-icon="arrow"></span></button>
+        <button class="quick-action-btn" id="btn-analyze-selection"><span class="quick-action-number">02</span><span><span class="quick-action-text" data-i18n="btnAnalyzeSelection">Unpack a passage</span><span class="quick-action-detail" data-i18n="quickSelectionDetail"></span></span><span data-icon="arrow"></span></button>
+      </div>
+      <p class="welcome-note" data-i18n="welcomeNote"></p>
+    </section>
+    <div class="messages" id="messages" role="log" aria-live="off" data-i18n-aria="conversationLabel" aria-label="Conversation"></div>
+    <div class="typing-indicator" id="typing-indicator" style="display:none" role="status" data-i18n-aria="thinkingLabel" aria-label="Reading and thinking"><div class="typing-avatar"><img src="icons/icon48.png" alt=""></div><div class="typing-dots"><span></span><span></span><span></span></div></div>
+  </main>
+  <footer class="input-area" id="input-area">
+    <div class="input-context">
+      <div class="input-actions"><button class="input-action-btn" id="btn-quick-page" data-i18n-title="btnQuickPageTitle"><span data-icon="page"></span><span data-i18n="quickPageShort">Page</span></button><button class="input-action-btn" id="btn-quick-selection" data-i18n-title="btnQuickSelectionTitle"><span data-icon="selection"></span><span data-i18n="quickSelectionShort">Selection</span></button></div>
+      <button class="topbar-status" id="topbar-status" data-i18n-title="statusNotConfigured"><span class="topbar-status-dot"></span><span id="connection-label" data-i18n="connectionSetup">Set up AI</span></button>
+    </div>
+    <div class="input-wrapper"><textarea id="input-text" data-i18n-placeholder="inputPlaceholder" data-i18n-aria="inputLabel" aria-label="Your question" placeholder="What would you like to understand?" rows="1"></textarea><button class="send-btn" id="btn-send" data-i18n-title="btnSendTitle" title="Send"><span data-icon="send"></span></button></div>
+    <p class="data-notice" data-i18n="dataNotice"></p>
+  </footer>
+</div>
+<script src="i18n.js"></script><script src="prompts.js"></script><script src="settings.js"></script><script src="ui-icons.js"></script><script src="lib/marked.min.js"></script><script src="markdown.js"></script><script src="sidepanel.js"></script>
 </body>
 </html>

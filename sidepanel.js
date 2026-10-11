@@ -44,10 +44,11 @@ const $$ = (sel) => document.querySelectorAll(sel);
 const Prompts = globalThis.ShadowScholarPrompts;
 const Settings = globalThis.ShadowScholarSettings;
 const I18n = globalThis.ShadowScholarI18n;
+const Icons = globalThis.ShadowScholarIcons;
 let MODE_META = {
-  answer: { label: '🎯 Answer Mode', badgeClass: '' },
-  idea: { label: '💡 Idea Mode', badgeClass: 'idea' },
-  personality: { label: '📸 Screenshot Mode', badgeClass: 'personality' }
+  answer: { label: 'Explanation', badgeClass: '' },
+  idea: { label: 'Guided thinking', badgeClass: 'idea' },
+  personality: { label: 'Visual reading', badgeClass: 'personality' }
 };
 function refreshModeMeta() {
   MODE_META = {
@@ -105,6 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await I18n.initI18n();
   refreshModeMeta();
   I18n.applyI18n();
+  Icons.apply();
   currentWindowId = (await chrome.windows.getCurrent()).id;
   await loadSettings();
   setupEventListeners();
@@ -181,6 +183,7 @@ async function updateConnectionStatus() {
     const configured = Boolean((result.apiKey || local) && result.dataConsentEndpoint === endpoint);
     statusEl.classList.toggle('connected', configured);
     statusEl.title = I18n.t(configured ? 'statusConnected' : 'statusNotConnected');
+    document.getElementById('connection-label').textContent = I18n.t(configured ? (local ? 'connectionLocal' : 'connectionReady') : 'connectionSetup');
   } catch { statusEl.classList.remove('connected'); }
 }
 
@@ -267,6 +270,14 @@ function setupEventListeners() {
   elements.settingsOverlay.addEventListener('click', (e) => {
     if (e.target === elements.settingsOverlay) closeSettings();
   });
+  elements.settingsPanel.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { event.preventDefault(); closeSettings(); }
+    if (event.key !== 'Tab') return;
+    const controls = [...elements.settingsPanel.querySelectorAll('button, input, select, textarea, a[href]')].filter(el => !el.disabled);
+    const first = controls[0], last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
   elements.btnSaveSettings.addEventListener('click', saveSettings);
   elements.settingApiUrl.addEventListener('input', () => { document.getElementById('setting-data-consent').checked = false; });
   document.getElementById('btn-clear-history').addEventListener('click', async () => {
@@ -319,11 +330,12 @@ function switchMode(mode) {
 function setTopbarMode(mode) {
   document.querySelectorAll('.topbar-mode-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.mode === mode);
+    btn.setAttribute('aria-pressed', String(btn.dataset.mode === mode));
   });
 }
 
 function getModeLabel(mode) {
-  return (MODE_META[mode] || MODE_META.answer).label.replace(/^[^\s]+ /, '');
+  return (MODE_META[mode] || MODE_META.answer).label;
 }
 
 function rememberSystemPromptDraft() {
@@ -630,7 +642,7 @@ function handleStreamError(error) {
   const bubble = currentAiMessageEl.querySelector('.message-content');
   if (bubble) {
     bubble.classList.remove('streaming-cursor');
-    bubble.innerHTML = `<span style="color: #ef4444;">❌ ${escapeHtml(error)}</span>`;
+    bubble.innerHTML = `<span style="color: #a23e2b;">${escapeHtml(error)}</span>`;
   }
 
   currentAiMessageEl = null;
@@ -649,16 +661,17 @@ function addMessage(role, content) {
   div.className = `message message-${role}`;
 
   const avatar = role === 'user'
-    ? '👤'
+    ? Icons.svg('user', 16)
     : '<img src="icons/icon48.png" alt="" aria-hidden="true">';
   const renderedContent = role === 'ai' ? renderMarkdown(content) : escapeHtml(content);
 
   div.innerHTML = `
     <div class="message-avatar">${avatar}</div>
     <div class="message-bubble">
+      <div class="message-role">${role === 'user' ? I18n.t('messageYou') : I18n.t('appName')}</div>
       <div class="message-content">${renderedContent}</div>
       <div class="message-actions">
-        <button class="message-action-btn" title="${I18n.t('btnCopyTitle')}">📋</button>
+        <button class="message-action-btn" title="${I18n.t('btnCopyTitle')}">${Icons.svg('copy', 13)}<span>${I18n.t('btnCopy')}</span></button>
       </div>
     </div>
   `;
@@ -772,6 +785,7 @@ function showToast(message, type = '') {
 
   const toast = document.createElement('div');
   toast.className = `status-toast ${type}`;
+  toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
   toast.textContent = message;
   document.body.appendChild(toast);
 
@@ -788,13 +802,19 @@ function showToast(message, type = '') {
 // ============================
 // 设置管理
 // ============================
+let settingsReturnFocus = null;
 function openSettings() {
+  settingsReturnFocus = document.activeElement;
   elements.settingsOverlay.classList.add('active');
+  for (const id of ['topbar', 'chat-area', 'input-area']) document.getElementById(id).inert = true;
+  elements.btnCloseSettings.focus();
   log('设置面板已打开');
 }
 
 function closeSettings() {
   elements.settingsOverlay.classList.remove('active');
+  for (const id of ['topbar', 'chat-area', 'input-area']) document.getElementById(id).inert = false;
+  settingsReturnFocus?.focus();
 }
 
 async function loadSettings() {

@@ -10,37 +10,37 @@
     "message": "Shadow Scholar"
   },
   "welcomeTitle": {
-    "message": "Shadow Scholar"
+    "message": "Stay curious.\nStay on the page."
   },
   "welcomeDesc": {
-    "message": "Your Smart Browser Assistant"
+    "message": "A little clarity, right where you read. Unpack a passage, follow an idea, and make the page your own."
   },
   "modeAnswer": {
-    "message": "🎯 Answer Mode"
+    "message": "Explanation mode"
   },
   "modeIdea": {
-    "message": "💡 Idea Mode"
+    "message": "Guided thinking"
   },
   "modeScreenshot": {
-    "message": "📸 Screenshot Mode"
+    "message": "Visual reading"
   },
   "modeAnswerShort": {
-    "message": "🎯 Answer"
+    "message": "Explain"
   },
   "modeIdeaShort": {
-    "message": "💡 Idea"
+    "message": "Explore"
   },
   "modeScreenshotShort": {
-    "message": "📸 Screenshot"
+    "message": "Capture"
   },
   "modeAnswerTitle": {
-    "message": "Answer Mode: Give direct, complete answers"
+    "message": "Explain the text with a complete answer"
   },
   "modeIdeaTitle": {
     "message": "Idea Mode: Give hints and thinking frameworks only"
   },
   "modeScreenshotTitle": {
-    "message": "Screenshot Mode: Capture current page and analyze with AI"
+    "message": "Send the visible webpage to your chosen model for visual explanation"
   },
   "hintAnswer": {
     "message": "Direct complete answers"
@@ -49,13 +49,13 @@
     "message": "Guided hints and short examples"
   },
   "hintScreenshot": {
-    "message": "Screenshot captures the current page for AI analysis"
+    "message": "Explain the visible page with a vision-capable model"
   },
   "statusNotConfigured": {
     "message": "API Key not configured"
   },
   "statusConnected": {
-    "message": "API key configured (connection not tested)"
+    "message": "Provider configured; connection not tested"
   },
   "statusNotConnected": {
     "message": "Configure your AI provider in Settings"
@@ -67,7 +67,7 @@
     "message": "Settings"
   },
   "settingsTitle": {
-    "message": "⚙️ Settings"
+    "message": "Your reading desk"
   },
   "settingApiUrl": {
     "message": "API URL"
@@ -115,19 +115,19 @@
     "message": "Save Settings"
   },
   "btnShowLogs": {
-    "message": "🔍 View Debug Logs"
+    "message": "View Debug Logs"
   },
   "btnHideLogs": {
-    "message": "🔍 Hide Debug Logs"
+    "message": "Hide Debug Logs"
   },
   "btnClearLogs": {
-    "message": "🗑️ Clear Logs"
+    "message": "Clear Logs"
   },
   "btnAnalyzePage": {
-    "message": "Analyze Current Page"
+    "message": "Read this page"
   },
   "btnAnalyzeSelection": {
-    "message": "Analyze Selection"
+    "message": "Unpack a passage"
   },
   "btnQuickPageTitle": {
     "message": "Analyze Page"
@@ -136,7 +136,7 @@
     "message": "Analyze Selection"
   },
   "inputPlaceholder": {
-    "message": "Type a message..."
+    "message": "What would you like to understand?"
   },
   "btnSendTitle": {
     "message": "Send"
@@ -256,7 +256,7 @@
     "message": "Logs cleared"
   },
   "contextMenuAnswer": {
-    "message": "🥷 Answer this question"
+    "message": "Explain with Shadow Scholar"
   },
   "fabTitleDefault": {
     "message": "Shadow Scholar - Answer this"
@@ -271,40 +271,40 @@
     "message": "Shadow Scholar - 📸 Screenshot Mode"
   },
   "panelTitleDefault": {
-    "message": "🥷 Shadow Scholar"
+    "message": "Shadow Scholar"
   },
   "panelTitleScreenshot": {
-    "message": "📸 Screenshot Mode"
+    "message": "Screenshot Mode"
   },
   "panelClose": {
     "message": "Close"
   },
   "panelBtnCopy": {
-    "message": "📋 Copy"
+    "message": "Copy"
   },
   "panelBtnCopied": {
-    "message": "✅ Copied"
+    "message": "Copied"
   },
   "panelBtnSidebar": {
-    "message": "📌 Send to Sidebar"
+    "message": "Send to Sidebar"
   },
   "panelBtnAutoSync": {
-    "message": "📸 Auto Sync"
+    "message": "Auto Sync"
   },
   "panelBtnSynced": {
-    "message": "✅ Synced"
+    "message": "Synced"
   },
   "panelBtnSent": {
-    "message": "✅ Sent"
+    "message": "Sent"
   },
   "panelBtnAutoSynced": {
-    "message": "✅ Auto Synced"
+    "message": "Auto Synced"
   },
   "panelBtnSyncFailed": {
-    "message": "⚠️ Sync Failed"
+    "message": "Sync Failed"
   },
   "panelErrorInvalidated": {
-    "message": "⚠️ Extension updated. Please refresh this page (Ctrl+R)."
+    "message": "Extension updated. Please refresh this page (Ctrl+R)."
   },
   "panelErrorRefresh": {
     "message": "Please refresh the page and try again"
@@ -319,7 +319,7 @@
     "message": "Auxiliary text:"
   },
   "panelErrorExtUpdated": {
-    "message": "⚠️ Extension updated. Please refresh the page."
+    "message": "Extension updated. Please refresh the page."
   },
   "popupOpenPanel": {
     "message": "Open Shadow Scholar"
@@ -328,13 +328,13 @@
     "message": "Side Panel · Chat & Q&A"
   },
   "popupModeLabel": {
-    "message": "📋 Mode"
+    "message": "Mode"
   },
   "popupAntiDetect": {
-    "message": "🛡️ Selection Helper"
+    "message": "Selection Helper"
   },
   "popupFullSettings": {
-    "message": "⚙️ Full Settings"
+    "message": "Full Settings"
   },
   "popupStatusNotConfigured": {
     "message": "Not Configured"
@@ -343,7 +343,7 @@
     "message": "Configured"
   },
   "popupFooter": {
-    "message": "v1.1.0 · Local Settings · Fast Response"
+    "message": "A quieter space for understanding."
   },
   "dataDisclosure": {
     "message": "When you request AI help, your messages, conversation context, selected/page text, or the visible tab screenshot (in Screenshot Mode) are sent to the API address above. The provider also receives your API key and connection metadata such as your IP address. Screenshots may include personal content visible on the page. Settings and up to 50 inline answers and 100 pending transfers are stored locally. The developer receives none of this data. Your provider may retain requests under its own policy."
@@ -361,9 +361,63 @@
     "message": "Saved local answers and pending requests cleared"
   },
   "dataNotice": {
-    "message": "AI requests send content to your configured provider. Screenshot Mode sends the visible webpage. Review data use in Settings."
+    "message": "Sent to your selected service; Capture includes the visible page. Local-only models can keep content on your device. Details in Settings."
   },
   "apiKeyRetention": {
     "message": "Your API key is kept in browser session memory and is cleared when Chrome restarts or the extension reloads. Other settings remain saved."
+  },
+  "quickPageDetail": {
+    "message": "Find the key ideas in the current page"
+  },
+  "quickSelectionDetail": {
+    "message": "Select a few lines on the page first"
+  },
+  "welcomeNote": {
+    "message": "Your model, your choice. Connect a cloud provider or run a local model such as Ollama."
+  },
+  "settingsService": {
+    "message": "Your AI service"
+  },
+  "settingsReading": {
+    "message": "Reading preferences"
+  },
+  "settingsPrivacy": {
+    "message": "Data & consent"
+  },
+  "localModeTitle": {
+    "message": "Prefer a local model?"
+  },
+  "localModeNote": {
+    "message": "Use a local Ollama model at http://localhost:11434/v1. Content stays on this computer only if the server runs locally and does not forward requests to the cloud."
+  },
+  "quickPageShort": {
+    "message": "Page"
+  },
+  "quickSelectionShort": {
+    "message": "Selection"
+  },
+  "connectionSetup": {
+    "message": "Set up AI"
+  },
+  "connectionReady": {
+    "message": "Configured"
+  },
+  "connectionLocal": {
+    "message": "Local endpoint"
+  },
+  "inputLabel": {
+    "message": "Your question"
+  },
+  "messageYou": {
+    "message": "YOU"
+  },
+  "modeNavigation": {
+    "message": "Study mode"
+  },
+  "conversationLabel": {
+    "message": "Conversation"
+  },
+  "thinkingLabel": {
+    "message": "Reading and thinking"
   }
 }

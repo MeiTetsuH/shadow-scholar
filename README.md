@@ -1,75 +1,101 @@
-# Shadow Scholar
+<p align="center">
+  <img src="icons/icon128.png" width="64" alt="Shadow Scholar">
+</p>
+<h1 align="center">影学者 · Shadow Scholar</h1>
+<p align="center"><strong>把好奇心，留在这一页。</strong><br>Stay curious. Stay on the page.</p>
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/fjokopekhdlkbdaegfjnphiocpmiaimj">Chrome Web Store</a> ·
+  <a href="PRIVACY.md">Privacy</a> ·
+  <a href="https://github.com/MeiTetsuH/shadow-scholar/issues">Support</a> ·
+  <a href="docs/README.en.md">English</a>
+</p>
 
-A Chrome Manifest V3 reading and study assistant. Select webpage text, discuss it in a side panel, or explicitly capture the visible page for explanation by **your chosen OpenAI-compatible AI provider**.
+![影学者：纸白、墨绿与朱红书签构成的阅读界面](docs/images/store-zh-01.png)
 
-## Features
+影学者是一款 Chrome 阅读与学习助手。选中一段文字，读懂一个观点，再在侧栏里继续追问。你选择 AI 模型，它把解释放在阅读发生的地方。
 
-- Floating selection action, context-menu analysis, and side-panel conversations.
-- Answer, guided-hint, and screenshot modes, with editable prompts.
-- Streaming Markdown, safe links, tables, and working copy buttons.
-- English and Chinese interfaces.
-- Optional selection helper for copy/selection/context menus outside editors. It does not interfere with paste, focus, visibility, timers, or JavaScript execution.
+纸白的底色、墨色的文字、克制的朱红标记。界面借鉴日系书刊与文具的排版，让正文、操作和数据说明各有位置。
 
-## Install and configure
+## 从阅读，到理解
 
-Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/fjokopekhdlkbdaegfjnphiocpmiaimj), or load this directory as an unpacked extension from `chrome://extensions`. Chrome 116 or later is required.
+| 你想做什么 | 怎么开始 |
+| --- | --- |
+| 读懂一个句子或概念 | 选中文字，点击浮动按钮；也可使用右键菜单 |
+| 找到一页内容的重点 | 在侧栏点击「读懂当前页面」 |
+| 顺着一个问题继续想 | 在侧栏追问，或切换到「思路」模式获得引导 |
+| 理解图表或可见画面 | 切换「截图」，使用支持图像的模型 |
 
-1. Open the extension's side panel and Settings.
-2. Enter a compatible API endpoint, API key, and the provider's exact model ID.
-3. Read the data-use disclosure, agree if you want to send requests to that endpoint, and save.
-4. Select text and click the floating action, use the context menu, or use Analyze Page / Analyze Selection. In Screenshot Mode, each AI request includes a capture of the visible webpage.
+回答支持流式显示、Markdown、表格和代码复制。中英文界面均可使用；每种模式的提示词也可以自己修改。
 
-| Provider | Example endpoint | Model ID example |
+![从一段文字到一次理解：侧栏中的示例对话](docs/images/store-zh-02.png)
+
+## 模型与数据，由你选择
+
+**使用本机 Ollama 等本地模型时，内容可以留在本机。** 条件是模型服务确实在这台电脑上运行，并且不把请求转发给云端服务。仅仅填写 `localhost` 并不能保证这一点，例如本地代理仍可能转发请求。
+
+**使用远程 AI 服务时，请求内容会发送给该服务商。** 包括你主动发送的选中文字、页面摘要素材、消息、上下文，以及截图模式下当前可见的网页。服务商还会收到 API 密钥和连接信息，其自己的隐私与保留政策适用。
+
+开发者没有后端，不会接收到你的密钥、对话、截图或回答。扩展没有广告与使用分析遥测。
+
+![本地模型与远程服务的数据去向说明](docs/images/store-zh-03.png)
+
+## 开始使用
+
+从 [Chrome Web Store](https://chromewebstore.google.com/detail/fjokopekhdlkbdaegfjnphiocpmiaimj) 安装，点击工具栏中的影学者图标，打开「阅读设置」。商店中的实际可用版本取决于审核进度；仓库中的设计版本为 **1.3.0**。
+
+1. 填写 AI 服务的 API 地址、模型名称和需要的 API Key。
+2. 阅读数据用途说明，确认同意后保存。更换地址需要重新同意。
+3. 打开普通网页，选中文字，或者在侧栏开始提问。
+
+| 使用方式 | API 地址示例 | 模型填写 |
 | --- | --- | --- |
-| OpenAI | `https://api.openai.com/v1` | `gpt-5.4-mini` |
-| OpenRouter | `https://openrouter.ai/api/v1` | `openai/gpt-5.4-mini` |
-| DeepSeek | `https://api.deepseek.com` | Provider-supported model ID |
-| Cloudflare AI Gateway | The gateway's OpenAI-compatible provider base URL | Provider-supported model ID |
-| Local Ollama | `http://localhost:11434/v1` | Installed local model name |
+| 本机 Ollama | `http://localhost:11434/v1` | 本机已安装的模型名称 |
+| OpenAI | `https://api.openai.com/v1` | 服务商支持的模型 ID |
+| OpenRouter | `https://openrouter.ai/api/v1` | 完整模型 ID，包括提供商前缀 |
+| 其他兼容服务 | 该服务的 OpenAI 兼容地址 | 服务商支持的模型 ID |
 
-Base URLs have `/chat/completions` appended; a bare origin gets `/v1/chat/completions`. Existing complete paths and query parameters are preserved. Ollama's local `/api` and `/api/chat` inputs are converted to its compatible `/v1/chat/completions` endpoint. Remote servers require HTTPS; HTTP is allowed only on loopback. Local servers can be used without an API key. Screenshot requests require a vision-capable model.
+本机服务可以不填密钥；若服务限制来源，需要允许此扩展的来源。截图需要支持图像的模型。远程地址必须使用 HTTPS，HTTP 仅支持本机回环地址。基础地址会自动补全 `/chat/completions`；完整路径与查询参数保留。Ollama 的本机 `/api`、`/api/chat` 地址会转换为兼容接口。
 
-The extension is free; cloud providers may charge for requests. It does not include a provider account, paid API credits, or native Anthropic Messages API support.
+扩展免费，不附带 AI 账号或额度；云服务可能收费。不直接支持原生 Anthropic Messages 接口。需要 Chrome 116 或更新版本；浏览器内部页面及部分商店页面限制扩展操作。
 
-## Privacy and storage
+## 本地保存与清除
 
-The developer operates no backend and receives no prompts, keys, screenshots, or answers. **Requested content does leave the browser when you use a remote AI provider.** Your selected text, page excerpts, typed messages, conversation context, and explicit screenshots are sent directly to the configured endpoint. The provider also receives network metadata. Its own retention and processing policies apply.
+- **API 密钥**仅保存在浏览器会话内存，重启、重新加载或更新扩展后需重新填写。
+- **设置和提示词**保存在本机。内联问答最多保留 50 条，待同步记录最多 100 条，另有总大小限制。
+- **侧栏对话**保存在内存；清除对话会同时取消当前请求。
+- **截图原图**不写入扩展历史，模型生成的文字解释可能作为答案保存。
+- 在设置中选择「清除本地问答历史和待处理请求」即可删除这些记录。此操作无法删除服务商已收到的数据。
 
-- API keys are held in trusted browser session memory and cleared on restart/reload/update. You will need to enter the key again after that. Preferences remain saved locally.
-- Up to 50 inline answers and 100 pending transfers are saved locally, with additional size limits. Use Settings → Clear saved local answers and pending requests to remove them.
-- Side-panel conversations live in memory. Clear Conversation removes the current conversation and cancels any active request.
-- The extension does not persist screenshot images, collect telemetry, load remote executable code, or render remote images from AI responses.
-- Consent is required before sending data, and changing the endpoint requires consent again.
+可选的「文字选择辅助」只处理编辑器外的复制、选择和右键菜单，不改写粘贴、焦点、可见性、计时器或脚本执行。完整的数据类别、接收方、保留时间和权限用途见 [隐私政策](PRIVACY.md)。
 
-See the complete [privacy policy](PRIVACY.md), including data categories, recipients, retention, deletion, and permission justifications.
+## 开发与验证
 
-## Development and verification
-
-Node.js 22+ and npm are required for development. Install the locked dependencies with `npm ci --ignore-scripts`.
+使用 Node.js 22+ 与 npm。安装依赖后，可在 `chrome://extensions` 中加载仓库目录作为未打包扩展。
 
 ```sh
+npm ci --ignore-scripts
 npm run verify
-npm audit
 npm run package
 ```
 
-`verify` checks syntax, manifest references, translation coverage, MV3 inline-handler restrictions, the vendored Markdown dependency, and the affected behavior tests. Tests simulate Chrome APIs and DOM interactions; real Chrome release validation is also necessary.
+`verify` 检查脚本、MV3 配置、翻译、打包依赖与行为测试。发布前还应在真实 Chrome 中验证。`package` 使用明确的文件清单生成 `dist/shadow-scholar-1.3.0.zip`，检查归档内容、CRC 和 SHA-256；测试、设计工具与开发依赖不进入安装包。
 
-`package` creates `dist/shadow-scholar-1.2.0.zip` using a fixed allowlist and verifies every archived file, CRC, and SHA-256. Private files, tests, dependencies, and local settings are excluded. The extension runs entirely from the packaged files; npm is not needed to use it.
+设计工作台：
 
-## Architecture
+```sh
+npm run design
+# http://localhost:11438/?slide=1&lang=zh
+```
 
-- `background.js`: trusted settings, session credentials, extraction, context-menu routing, and cancellable requests.
-- `stream.js`: bounded SSE decoding and stream cleanup.
-- `settings.js`: defaults, migration, and endpoint validation.
-- `extractors.js`: bounded page traversal without cloning the entire DOM.
-- `content.js`: isolated floating interface and inline responses.
-- `sidepanel.*`: chat, settings, consent, and local-data controls.
-- `markdown.js`: shared HTML allowlist around the vendored Marked parser.
-- `anti-detect.js`: legacy filename retained for the optional, narrowly scoped selection helper.
+`slide=1/2/3` 与 `lang=zh/en` 对应六张商店画面。工作台直接加载扩展的 HTML、CSS 和脚本，使用合成内容与本机模拟响应，不调用第三方模型；它不替代真实扩展环境测试。画面以 1280 × 800 导出，浏览器缩放需为 100%。设计来源见 [design/README.md](design/README.md)。
 
-Long requests use a bounded, request-scoped keep-alive in accordance with Chrome's service-worker guidance. No hidden offscreen page is needed. Concurrent requests have independent cancellation and cleanup.
+| 文件 | 职责 |
+| --- | --- |
+| `background.js` / `stream.js` | 可信设置、会话密钥、请求路由、取消与流式解码 |
+| `settings.js` / `extractors.js` | 端点校验、设置迁移与有界页面提取 |
+| `sidepanel.*` / `content.js` | 侧栏、设置、页内浮窗 |
+| `markdown.js` / `ui-icons.js` | 安全 Markdown 与随包提供的界面图标 |
 
 ## License
 
-[MIT](LICENSE). The packaged [Marked parser](https://github.com/markedjs/marked) is also MIT-licensed; its license is included in `lib/marked.LICENSE`.
+[MIT](LICENSE)。随包分发的 Marked 同为 MIT，许可证见 `lib/marked.LICENSE`。

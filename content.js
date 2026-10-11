@@ -29,7 +29,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // ============================
 (async () => {
   await I18n.initI18n();
-  console.log('%c🥷 影学者 内容脚本已加载', 'color: #a78bfa; font-size: 14px; font-weight: bold;');
+  const Icons = globalThis.ShadowScholarIcons;
 
   // 等待 body 就绪
   const container = document.body || document.documentElement;
@@ -45,269 +45,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // 注入样式
   const style = document.createElement('style');
   style.textContent = `
-    * { margin:0; padding:0; box-sizing:border-box; }
-
-    /* 影学者浮动快捷按钮（极度精致小巧，高透明隐形设计） */
-    .ninja-fab {
-      position: fixed;
-      display: none;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #8b5cf6, #ec4899);
-      border: 1px solid rgba(255,255,255,0.25);
-      cursor: pointer;
-      pointer-events: auto;
-      z-index: 2147483647;
-      font-size: 13px;
-      line-height: 22px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(139,92,246,0.35), inset 0 1px 1px rgba(255,255,255,0.2);
-      opacity: 0.5;
-      transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s ease, opacity 0.2s ease, background 0.3s ease;
-      user-select: none;
-      animation: ninja-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .ninja-fab.idea-mode {
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
-      box-shadow: 0 2px 8px rgba(245,158,11,0.35), inset 0 1px 1px rgba(255,255,255,0.2);
-    }
-    .ninja-fab.personality-mode {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #db2777, #f97316);
-      border-color: rgba(251,113,133,0.55);
-      font-size: 13px;
-      line-height: 22px;
-      box-shadow: 0 2px 9px rgba(219,39,119,0.42), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 1px rgba(255,255,255,0.24);
-      opacity: 0.72;
-    }
-    .ninja-fab:hover {
-      transform: scale(1.22) rotate(15deg);
-      opacity: 0.95;
-      box-shadow: 0 4px 16px rgba(139,92,246,0.6), 0 0 10px rgba(236,72,153,0.35);
-    }
-    .ninja-fab.idea-mode:hover {
-      box-shadow: 0 4px 16px rgba(245,158,11,0.6), 0 0 10px rgba(239,68,68,0.35);
-    }
-    .ninja-fab.personality-mode:hover {
-      box-shadow: 0 4px 16px rgba(236,72,153,0.58), 0 0 10px rgba(139,92,246,0.34);
-    }
-    .ninja-fab:active { transform: scale(0.9); }
-    @keyframes ninja-pop {
-      0% { transform: scale(0); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    /* 内联答题面板（现代化高透光磨砂液态玻璃，确保极其出色的文本清晰度与透光折射） */
-    .ninja-panel {
-      position: fixed;
-      display: none;
-      width: min(420px, calc(100vw - 16px));
-      max-height: 480px;
-      background: rgba(10, 11, 22, 0.62); /* 62% 的高透光透明度，完美融于页面背景并透射细节 */
-      backdrop-filter: blur(28px) saturate(180%);
-      -webkit-backdrop-filter: blur(28px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.08); /* 极细亮白玻璃边框 */
-      border-radius: 14px;
-      box-shadow: 0 16px 48px rgba(0,0,0,0.55), inset 0 1px 1px rgba(255,255,255,0.15), 0 0 16px rgba(168,85,247,0.06);
-      pointer-events: auto;
-      z-index: 2147483647;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
-      color: #f1f5f9;
-      font-size: 14px;
-      line-height: 1.7;
-      overflow: hidden;
-      animation: ninja-slide 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    @keyframes ninja-slide {
-      0% { transform: translateY(12px) scale(0.97); opacity: 0; }
-      100% { transform: translateY(0) scale(1); opacity: 1; }
-    }
-
-    /* 极简玻璃切片头部 */
-    .ninja-panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.02); /* 极致通透轻量分割 */
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06); /* 超细白色玻璃分割线 */
-      cursor: move;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    }
-    .ninja-panel-title {
-      font-size: 13.5px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #a855f7 0%, #60a5fa 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      letter-spacing: 0.5px;
-    }
-    .ninja-panel-close {
-      width: 24px;
-      height: 24px;
-      border: 1px solid rgba(255,255,255,0.05);
-      background: rgba(255,255,255,0.04);
-      border-radius: 6px;
-      color: #94a3b8;
-      cursor: pointer;
-      font-size: 12px;
-      line-height: 22px;
-      text-align: center;
-      pointer-events: auto;
-      transition: all 0.15s ease;
-    }
-    .ninja-panel-close:hover { 
-      background: rgba(239,68,68,0.22); 
-      border-color: rgba(239,68,68,0.3);
-      color: #f87171; 
-      transform: scale(1.05);
-    }
-
-    .ninja-panel-body {
-      padding: 16px;
-      max-height: 390px;
-      overflow-y: auto;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
-    .ninja-panel-body::-webkit-scrollbar { width: 4px; }
-    .ninja-panel-body::-webkit-scrollbar-track { background: transparent; }
-    .ninja-panel-body::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.35); border-radius: 4px; }
-    .ninja-panel-body::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.6); }
-
-    /* 高可读性文本渲染 */
-    .ninja-panel-body p { margin-bottom: 10px; }
-    .ninja-panel-body strong, .ninja-panel-body b { 
-      color: #fca5a5; /* 醒目的淡红色，帮助在答题时一目了然锁定重点 */
-      font-weight: 700;
-      background: rgba(239, 68, 68, 0.08);
-      padding: 0px 4px;
-      border-radius: 3px;
-      border: 1px solid rgba(239, 68, 68, 0.12);
-    }
-    .ninja-panel-body code {
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255,255,255,0.05);
-      padding: 2px 5px;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', 'Menlo', monospace;
-      font-size: 12.5px;
-      color: #fda4af;
-    }
-    .ninja-panel-body pre {
-      background: rgba(3, 4, 8, 0.7);
-      border: 1px solid rgba(139,92,246,0.2);
-      border-radius: 8px;
-      padding: 12px 14px;
-      overflow-x: auto;
-      margin: 10px 0;
-      font-size: 12px;
-      line-height: 1.55;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
-    }
-    .ninja-panel-body pre code {
-      background: none;
-      padding: 0;
-      font-size: 12px;
-      color: #cbd5e1;
-    }
-    .ninja-panel-body ul, .ninja-panel-body ol { padding-left: 20px; margin: 8px 0; }
-    .ninja-panel-body li { margin: 4px 0; }
-    .ninja-panel-body h1,.ninja-panel-body h2,.ninja-panel-body h3,.ninja-panel-body h4 {
-      color: #ffffff; margin: 12px 0 8px 0; font-weight: 700;
-    }
-    .ninja-panel-body h1 { font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 3px; }
-    .ninja-panel-body h2 { font-size: 15px; }
-    .ninja-panel-body blockquote {
-      border-left: 3px solid #8b5cf6;
-      padding-left: 10px;
-      margin: 10px 0;
-      color: #94a3b8;
-      background: rgba(139,92,246,0.05);
-      border-radius: 0 4px 4px 0;
-      padding: 6px 10px;
-    }
-    .ninja-panel-body hr {
-      border: none;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      margin: 12px 0;
-    }
-    .ninja-panel-body a { color: #60a5fa; text-decoration: underline; }
-    .ninja-panel-body table { border-collapse: collapse; width: 100%; margin: 10px 0; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; overflow:hidden;}
-    .ninja-panel-body th, .ninja-panel-body td {
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 6px 10px;
-      font-size: 12.5px;
-    }
-    .ninja-panel-body th { background: rgba(139,92,246,0.12); color: #ffffff; font-weight: 700; }
-
-    /* 加载动画 */
-    .ninja-loading {
-      display: inline-flex;
-      gap: 4px;
-      padding: 4px 0;
-    }
-    .ninja-loading span {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #8b5cf6;
-      animation: ninja-bounce 1.2s infinite;
-    }
-    .ninja-loading span:nth-child(2) { animation-delay: 0.15s; }
-    .ninja-loading span:nth-child(3) { animation-delay: 0.3s; }
-    @keyframes ninja-bounce {
-      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-      40% { transform: scale(1); opacity: 1; }
-    }
-
-    /* 底部操作卡片按钮 */
-    .ninja-panel-footer {
-      display: flex;
-      justify-content: flex-end;
-      padding: 10px 16px 12px;
-      gap: 8px;
-      background: rgba(0, 0, 0, 0.08); /* 极致通透轻量分割 */
-      border-top: 1px solid rgba(255,255,255,0.04);
-    }
-    .ninja-panel-btn {
-      padding: 6px 14px;
-      border: 1px solid rgba(255, 255, 255, 0.08); /* 极细白玻璃边框 */
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.03); /* 轻透玻璃背景 */
-      color: #e2e8f0;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      pointer-events: auto;
-      box-shadow: inset 0 1px 1px rgba(255,255,255,0.05);
-    }
-    .ninja-panel-btn:hover {
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(59, 130, 246, 0.12) 100%); /* 优雅的品牌霓虹微光 hover */
-      border-color: rgba(168, 85, 247, 0.3);
-      color: #ffffff;
-      box-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 4px 12px rgba(168,85,247,0.1);
-      transform: translateY(-1px);
-    }
-    .ninja-panel-btn:active {
-      transform: translateY(0);
-    }
+:host{color-scheme:light}*{margin:0;padding:0;box-sizing:border-box}button{font:inherit;cursor:pointer}svg{display:block;pointer-events:none}button:focus-visible,a:focus-visible{outline:2px solid #a23e2b;outline-offset:3px}
+.ninja-fab{position:fixed;display:none;width:34px;height:34px;border-radius:6px;background:#263832;border:1px solid #fffefa;color:#f7f6f0;pointer-events:auto;z-index:2147483647;box-shadow:0 3px 10px #26383225;opacity:1;user-select:none;padding:7px;transition:background .15s}
+.ninja-fab:hover{background:#a23e2b}.ninja-fab.idea-mode{background:#65705a}.ninja-fab.personality-mode{background:#a23e2b}
+.ninja-panel{position:fixed;display:none;width:min(420px,calc(100vw - 20px));max-height:min(480px,calc(100dvh - 20px));background:#fffefa;border:1px solid #c9cec1;border-radius:6px;box-shadow:0 12px 38px #26383225;pointer-events:auto;z-index:2147483647;font:14px/1.85 -apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;color:#263832;overflow:hidden}
+.ninja-panel-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;background:#f7f6f0;border-bottom:1px solid #dcded4;cursor:move;flex-shrink:0}
+.ninja-panel-title{font-weight:600;font-size:12px;letter-spacing:.5px;display:flex;gap:8px;align-items:center}.ninja-panel-title::before{content:'';width:3px;height:15px;background:#a23e2b}
+.ninja-panel-close{width:30px;height:30px;display:grid;place-items:center;border:0;background:transparent;border-radius:3px;color:#67716b}.ninja-panel-close:hover{background:#eeefe7;color:#a23e2b}
+.ninja-panel-body{padding:20px;min-height:0;overflow:auto;overflow-wrap:anywhere;scrollbar-width:thin;scrollbar-color:#c7cdc3 transparent}.ninja-panel-body p{margin:0 0 12px}.ninja-panel-body>:last-child{margin-bottom:0}.ninja-panel-body strong,.ninja-panel-body b{font-weight:650;color:#263832}.ninja-panel-body code{background:#eeefe7;padding:2px 5px;border-radius:3px;font:12px/1.7 Menlo,Consolas,monospace}.ninja-panel-body pre{background:#eeefe7;border:1px solid #dcded4;border-radius:4px;padding:12px;overflow-x:auto;margin:12px 0}.ninja-panel-body pre code{background:none;padding:0;white-space:pre}.ninja-panel-body ul,.ninja-panel-body ol{padding-left:20px;margin:10px 0}.ninja-panel-body li{margin:5px 0}.ninja-panel-body h1,.ninja-panel-body h2,.ninja-panel-body h3,.ninja-panel-body h4{font-family:'Iowan Old Style','Songti SC',Georgia,serif;font-weight:600;line-height:1.5;margin:18px 0 10px}.ninja-panel-body h1{font-size:22px}.ninja-panel-body h2{font-size:20px}.ninja-panel-body h3{font-size:17px}.ninja-panel-body blockquote{border-left:2px solid #a23e2b;padding:2px 0 2px 12px;margin:12px 0;color:#67716b}.ninja-panel-body hr{border:0;border-top:1px solid #dcded4;margin:14px 0}.ninja-panel-body a{color:#a23e2b;text-decoration:underline;text-underline-offset:3px}.ninja-panel-body table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse;margin:12px 0}.ninja-panel-body th,.ninja-panel-body td{border:1px solid #dcded4;padding:6px 10px;font-size:12px;text-align:left}.ninja-panel-body th{background:#eeefe7}
+.ninja-loading{display:flex;gap:5px;padding:10px 0}.ninja-loading span{width:5px;height:5px;background:#67716b;border-radius:50%;animation:ninja-breathe 1.2s infinite}.ninja-loading span:nth-child(2){animation-delay:.15s}.ninja-loading span:nth-child(3){animation-delay:.3s}@keyframes ninja-breathe{50%{opacity:.2}}
+.ninja-panel-footer{display:flex;justify-content:flex-end;align-items:center;padding:9px 14px;gap:12px;border-top:1px solid #dcded4;background:#f7f6f0;flex-shrink:0}.ninja-panel-btn{min-height:30px;padding:3px 5px;border:0;border-radius:3px;background:none;color:#67716b;font-size:11px}.ninja-panel-btn:hover{color:#a23e2b;background:#eeefe7}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
   `;
   shadow.appendChild(style);
 
   // ============================
   // 创建浮动按钮
   // ============================
-  const fab = document.createElement('div');
+  const fab = document.createElement('button');
+  fab.type = 'button';
   fab.className = 'ninja-fab';
-  fab.textContent = '🥷';
+  fab.innerHTML = Icons.svg('book');
   fab.title = I18n.t('fabTitleDefault');
   shadow.appendChild(fab);
 
@@ -318,14 +76,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     fab.classList.remove('idea-mode', 'personality-mode');
     if (currentMode === 'idea') {
       fab.classList.add('idea-mode');
-      fab.textContent = '💡';
+      fab.innerHTML = Icons.svg('idea');
       fab.title = I18n.t('fabTitleIdea');
     } else if (currentMode === 'personality') {
       fab.classList.add('personality-mode');
-      fab.textContent = '📸';
+      fab.innerHTML = Icons.svg('camera');
       fab.title = I18n.t('fabTitleScreenshot');
     } else {
-      fab.textContent = '🥷';
+      fab.innerHTML = Icons.svg('book');
       fab.title = I18n.t('fabTitleAnswer');
     }
   }
@@ -345,12 +103,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   panel.innerHTML = `
     <div class="ninja-panel-header">
       <div class="ninja-panel-title">${I18n.t('panelTitleDefault')}</div>
-      <div class="ninja-panel-close" title="${I18n.t('panelClose')}">✕</div>
+      <button type="button" class="ninja-panel-close" title="${I18n.t('panelClose')}">${Icons.svg('close',16)}</button>
     </div>
     <div class="ninja-panel-body"></div>
     <div class="ninja-panel-footer">
-      <div class="ninja-panel-btn" data-action="copy">${I18n.t('panelBtnCopy')}</div>
-      <div class="ninja-panel-btn" data-action="sidebar">${I18n.t('panelBtnSidebar')}</div>
+      <button type="button" class="ninja-panel-btn" data-action="copy">${I18n.t('panelBtnCopy')}</button>
+      <button type="button" class="ninja-panel-btn" data-action="sidebar">${I18n.t('panelBtnSidebar')}</button>
     </div>
   `;
   shadow.appendChild(panel);
@@ -415,9 +173,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // 放在选中文字右上方
     fab.style.left = Math.min(x + 10, window.innerWidth - 50) + 'px';
     fab.style.top = Math.max(y - 45, 5) + 'px';
-    fab.style.animation = 'none';
-    fab.offsetHeight; // reflow
-    fab.style.animation = 'ninja-pop 0.2s ease-out';
   }
 
   function hideFab() {
@@ -441,7 +196,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     panel.style.flexDirection = 'column';
 
     // 智能定位：尽量靠近点击位置，但不超出屏幕
-    const pw = 420, maxH = 480;
+    const pw = Math.min(420, window.innerWidth - 20), maxH = Math.min(480, window.innerHeight - 20);
     let left = x - pw / 2;
     let top = y + 10;
     if (left < 10) left = 10;
@@ -451,9 +206,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     panel.style.left = left + 'px';
     panel.style.top = top + 'px';
-    panel.style.animation = 'none';
-    panel.offsetHeight;
-    panel.style.animation = 'ninja-slide 0.25s ease-out';
+    panelClose.focus({ preventScroll: true });
 
     panelBody.innerHTML = '<div class="ninja-loading"><span></span><span></span><span></span></div>';
     currentQuestionText = '';
@@ -478,6 +231,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       currentPort = null;
     }
   }
+
+  panel.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { hidePanel(); hideFab(); }
+  });
 
   panelClose.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -509,7 +266,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const panelHeader = panel.querySelector('.ninja-panel-header');
 
   panelHeader.addEventListener('mousedown', (e) => {
-    if (e.target === panelClose) return;
+    if (e.target.closest('button')) return;
     isDragging = true;
     dragOffX = e.clientX - panel.offsetLeft;
     dragOffY = e.clientY - panel.offsetTop;
@@ -518,8 +275,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   document.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
-    panel.style.left = (e.clientX - dragOffX) + 'px';
-    panel.style.top = (e.clientY - dragOffY) + 'px';
+    panel.style.left = Math.max(10, Math.min(e.clientX - dragOffX, window.innerWidth - panel.offsetWidth - 10)) + 'px';
+    panel.style.top = Math.max(10, Math.min(e.clientY - dragOffY, window.innerHeight - panel.offsetHeight - 10)) + 'px';
   });
 
   document.addEventListener('mouseup', () => {
@@ -532,7 +289,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   function askQuestion(text) {
     // 先检查扩展上下文是否有效
     if (!chrome.runtime?.id) {
-      panelBody.innerHTML = `<p style="color:#f87171;">${I18n.t('panelErrorInvalidated')}</p>`;
+      panelBody.innerHTML = `<p style="color:#a23e2b;">${I18n.t('panelErrorInvalidated')}</p>`;
       return;
     }
 
@@ -583,8 +340,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // 如果还在加载中（没有收到内容），说明连接异常断开
         if (!finished) {
           const err = chrome.runtime.lastError?.message || I18n.t('panelErrorDisconnected');
-          panelBody.innerHTML = `<p style="color:#f87171;">⚠️ ${escapeHtml(err)}</p>
-            <p style="color:#94a3b8;font-size:12px;margin-top:6px;">${I18n.t('panelErrorRefresh')}</p>`;
+          panelBody.innerHTML = `<p style="color:#a23e2b;">⚠️ ${escapeHtml(err)}</p>
+            <p style="color:#67716b;font-size:12px;margin-top:6px;">${I18n.t('panelErrorRefresh')}</p>`;
         }
       });
 
@@ -596,9 +353,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } catch (e) {
       const msg = e.message || '';
       if (msg.includes('Extension context invalidated') || msg.includes('context')) {
-        panelBody.innerHTML = `<p style="color:#f87171;">${I18n.t('panelErrorExtUpdated')}</p>`;
+        panelBody.innerHTML = `<p style="color:#a23e2b;">${I18n.t('panelErrorExtUpdated')}</p>`;
       } else {
-        panelBody.innerHTML = `<p style="color:#f87171;">❌ ${escapeHtml(msg)}</p>`;
+        panelBody.innerHTML = `<p style="color:#a23e2b;">❌ ${escapeHtml(msg)}</p>`;
       }
     }
   }

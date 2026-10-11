@@ -8,7 +8,7 @@ root = Path(__file__).resolve().parent.parent
 manifest = json.loads((root / 'manifest.json').read_text())
 files = [
     'manifest.json', 'background.js', 'settings.js', 'stream.js', 'prompts.js',
-    'i18n.js', 'extractors.js', 'content.js', 'anti-detect.js', 'markdown.js',
+    'i18n.js', 'ui-icons.js', 'extractors.js', 'content.js', 'anti-detect.js', 'markdown.js',
     'sidepanel.html', 'sidepanel.js', 'sidepanel.css', 'popup.html', 'popup.js',
     'popup.css', 'PRIVACY.md', 'LICENSE', 'lib/marked.min.js', 'lib/marked.LICENSE',
     '_locales/en/messages.json', '_locales/zh_CN/messages.json',
