@@ -8,7 +8,7 @@ const allowed=new Set(['sidepanel.html','sidepanel.css','sidepanel.js','popup.ht
 const server=http.createServer((req,res)=>{
  const url=new URL(req.url,'http://localhost');let name=url.pathname.slice(1)||'design/showcase.html';
  if(name==='preview-answer'){res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});const chunks=['## A reading note\n\n','**Understanding grows through connections.**\n\n','Pause, restate the idea, and connect it to one example.'];let i=0;const timer=setInterval(()=>{if(i<chunks.length)res.write(chunks[i++]);else{clearInterval(timer);res.end();}},80);req.on('close',()=>clearInterval(timer));return;}
- if(!allowed.has(name)&&!/^design\/(inline\.html|showcase\.html|showcase\.css|showcase\.js|preview-shim\.js)$/.test(name)){res.writeHead(404);res.end();return;}
+ if(!allowed.has(name)&&!/^design\/(promo\.(?:html|css|js)|inline\.html|showcase\.html|showcase\.css|showcase\.js|preview-shim\.js)$/.test(name)){res.writeHead(404);res.end();return;}
  const file=path.join(root,name);if(!fs.existsSync(file)){res.writeHead(404);res.end();return;}
  let body=fs.readFileSync(file);
  if(name==='design/preview-shim.js'){const locales={zh:JSON.parse(fs.readFileSync(path.join(root,'_locales/zh_CN/messages.json'))),en:JSON.parse(fs.readFileSync(path.join(root,'_locales/en/messages.json')))};body=Buffer.from(body.toString().replace('PREVIEW_LOCALES',JSON.stringify(locales)));}
