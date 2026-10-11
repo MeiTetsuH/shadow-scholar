@@ -4,138 +4,366 @@
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "一款面向学习与网页理解的 AI 辅助工具，可帮助整理内容、分析思路并生成清晰解释。",
-    "description": "Extension description"
+    "message": "使用你配置的 AI 服务阅读、解释和总结网页，支持划词问答、侧栏对话与截图分析。"
   },
-
-  "appName": { "message": "影学者" },
-  "welcomeTitle": { "message": "影学者" },
-  "welcomeDesc": { "message": "你的智能浏览器助手" },
-
-  "modeAnswer": { "message": "🎯 答案模式" },
-  "modeIdea": { "message": "💡 思路模式" },
-  "modeScreenshot": { "message": "📸 截图模式" },
-  "modeAnswerShort": { "message": "🎯 答案" },
-  "modeIdeaShort": { "message": "💡 思路" },
-  "modeScreenshotShort": { "message": "📸 截图" },
-  "modeAnswerTitle": { "message": "答案模式：直接给完整答案" },
-  "modeIdeaTitle": { "message": "思路模式：只给解题思路" },
-  "modeScreenshotTitle": { "message": "截图模式：截图读取当前页面，先给答案再翻译题目" },
-  "hintAnswer": { "message": "直接给出完整答案" },
-  "hintIdea": { "message": "只给解题思路，适合有回放检测的平台" },
-  "hintScreenshot": { "message": "截图读取当前页面，先给答案再翻译题目" },
-
-  "statusNotConfigured": { "message": "未配置 API Key" },
-  "statusConnected": { "message": "✅ API 已连接" },
-  "statusNotConnected": { "message": "⚠️ 未配置 API Key，点击设置" },
-  "btnClearTitle": { "message": "清除对话" },
-  "btnSettingsTitle": { "message": "设置" },
-
-  "settingsTitle": { "message": "⚙️ 设置" },
-  "settingApiUrl": { "message": "API 地址" },
-  "settingApiUrlHint": { "message": "默认使用 OpenAI；也支持其他 OpenAI 兼容端点，自动补全 /chat/completions 路径" },
-  "settingApiKey": { "message": "API Key" },
-  "settingToggleVisibility": { "message": "显示/隐藏" },
-  "settingModel": { "message": "模型名称" },
-  "settingModelHint": { "message": "如 openai/gpt-5.4-mini, deepseek-chat, gpt-4o 等" },
-  "settingSystemPrompt": { "message": "System Prompt" },
-  "settingSystemPromptPlaceholder": { "message": "你是影学者，一个强大的AI助手..." },
-  "settingAntiDetect": { "message": "反检测模式" },
-  "settingAntiDetectHint": { "message": "突破页面焦点检测、可见性检测等限制" },
-  "settingLanguage": { "message": "语言 / Language" },
-  "settingLanguageHint": { "message": "切换后重新打开面板生效" },
-  "langZh": { "message": "中文" },
-  "langEn": { "message": "English" },
-  "btnSaveSettings": { "message": "保存设置" },
-  "btnShowLogs": { "message": "🔍 查看调试日志" },
-  "btnHideLogs": { "message": "🔍 隐藏调试日志" },
-  "btnClearLogs": { "message": "🗑️ 清除日志" },
-
-  "btnAnalyzePage": { "message": "分析当前页面" },
-  "btnAnalyzeSelection": { "message": "分析选中内容" },
-  "btnQuickPageTitle": { "message": "分析页面" },
-  "btnQuickSelectionTitle": { "message": "分析选中" },
-  "inputPlaceholder": { "message": "输入消息..." },
-  "btnSendTitle": { "message": "发送" },
-
+  "appName": {
+    "message": "影学者"
+  },
+  "welcomeTitle": {
+    "message": "影学者"
+  },
+  "welcomeDesc": {
+    "message": "你的智能浏览器助手"
+  },
+  "modeAnswer": {
+    "message": "🎯 答案模式"
+  },
+  "modeIdea": {
+    "message": "💡 思路模式"
+  },
+  "modeScreenshot": {
+    "message": "📸 截图模式"
+  },
+  "modeAnswerShort": {
+    "message": "🎯 答案"
+  },
+  "modeIdeaShort": {
+    "message": "💡 思路"
+  },
+  "modeScreenshotShort": {
+    "message": "📸 截图"
+  },
+  "modeAnswerTitle": {
+    "message": "答案模式：直接给完整答案"
+  },
+  "modeIdeaTitle": {
+    "message": "思路模式：只给解题思路"
+  },
+  "modeScreenshotTitle": {
+    "message": "截图模式：截图读取当前页面，先给答案再翻译题目"
+  },
+  "hintAnswer": {
+    "message": "直接给出完整答案"
+  },
+  "hintIdea": {
+    "message": "给出引导思路与简短示例"
+  },
+  "hintScreenshot": {
+    "message": "截图读取当前页面，先给答案再翻译题目"
+  },
+  "statusNotConfigured": {
+    "message": "未配置 API Key"
+  },
+  "statusConnected": {
+    "message": "已配置 API 密钥（尚未测试连接）"
+  },
+  "statusNotConnected": {
+    "message": "请在设置中配置 AI 服务"
+  },
+  "btnClearTitle": {
+    "message": "清除对话"
+  },
+  "btnSettingsTitle": {
+    "message": "设置"
+  },
+  "settingsTitle": {
+    "message": "⚙️ 设置"
+  },
+  "settingApiUrl": {
+    "message": "API 地址"
+  },
+  "settingApiUrlHint": {
+    "message": "默认使用 OpenAI；也支持其他 OpenAI 兼容端点，自动补全 /chat/completions 路径"
+  },
+  "settingApiKey": {
+    "message": "API Key"
+  },
+  "settingToggleVisibility": {
+    "message": "显示/隐藏"
+  },
+  "settingModel": {
+    "message": "模型名称"
+  },
+  "settingModelHint": {
+    "message": "填写服务商提供的模型 ID，例如 OpenAI 使用 gpt-5.4-mini，OpenRouter 使用 openai/gpt-5.4-mini。"
+  },
+  "settingSystemPrompt": {
+    "message": "System Prompt"
+  },
+  "settingSystemPromptPlaceholder": {
+    "message": "你是影学者，一个强大的AI助手..."
+  },
+  "settingAntiDetect": {
+    "message": "文字选择辅助"
+  },
+  "settingAntiDetectHint": {
+    "message": "可选：在编辑器外保留复制、选择和右键菜单。修改后刷新网页生效。"
+  },
+  "settingLanguage": {
+    "message": "语言 / Language"
+  },
+  "settingLanguageHint": {
+    "message": "切换后重新打开面板生效"
+  },
+  "langZh": {
+    "message": "中文"
+  },
+  "langEn": {
+    "message": "English"
+  },
+  "btnSaveSettings": {
+    "message": "保存设置"
+  },
+  "btnShowLogs": {
+    "message": "🔍 查看调试日志"
+  },
+  "btnHideLogs": {
+    "message": "🔍 隐藏调试日志"
+  },
+  "btnClearLogs": {
+    "message": "🗑️ 清除日志"
+  },
+  "btnAnalyzePage": {
+    "message": "分析当前页面"
+  },
+  "btnAnalyzeSelection": {
+    "message": "分析选中内容"
+  },
+  "btnQuickPageTitle": {
+    "message": "分析页面"
+  },
+  "btnQuickSelectionTitle": {
+    "message": "分析选中"
+  },
+  "inputPlaceholder": {
+    "message": "输入消息..."
+  },
+  "btnSendTitle": {
+    "message": "发送"
+  },
   "toastImportedRecords": {
     "message": "已导入 $COUNT$ 条内联问答记录",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "toastModeSwitched": {
     "message": "已切换到$MODE$",
-    "placeholders": { "mode": { "content": "$1" } }
+    "placeholders": {
+      "mode": {
+        "content": "$1"
+      }
+    }
   },
-  "toastCapturing": { "message": "正在截取当前浏览器画面..." },
-  "toastFetchingPage": { "message": "正在获取页面内容..." },
+  "toastCapturing": {
+    "message": "正在截取当前浏览器画面..."
+  },
+  "toastFetchingPage": {
+    "message": "正在获取页面内容..."
+  },
   "toastPageContentError": {
     "message": "获取页面内容失败: $ERROR$",
-    "placeholders": { "error": { "content": "$1" } }
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   },
-  "toastPageContentEmpty": { "message": "获取页面内容失败，请确保当前页面不是浏览器内部页面" },
-  "toastSelectionError": { "message": "获取选中文字失败" },
-  "toastSelectFirst": { "message": "请先在页面中选中文字" },
+  "toastPageContentEmpty": {
+    "message": "获取页面内容失败，请确保当前页面不是浏览器内部页面"
+  },
+  "toastSelectionError": {
+    "message": "获取选中文字失败"
+  },
+  "toastSelectFirst": {
+    "message": "请先在页面中选中文字"
+  },
   "toastOperationFailed": {
     "message": "操作失败: $ERROR$",
-    "placeholders": { "error": { "content": "$1" } }
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   },
-  "toastConversationCleared": { "message": "对话已清除" },
-  "toastCopied": { "message": "已复制到剪贴板" },
-  "toastSettingsSaved": { "message": "设置已保存 ✓" },
-  "toastAntiDetectHint": { "message": "，反检测关闭后需刷新页面" },
-  "toastLogsCleared": { "message": "调试日志已清除" },
-  "toastScreenshotSynced": { "message": "截图问答已自动同步" },
-  "toastSyncedToSidebar": { "message": "问答已同步到侧边栏" },
-  "toastLanguageChanged": { "message": "语言已切换，请重新打开面板生效" },
-
-  "labelScreenshotQA": { "message": "截图问答" },
-  "labelInlineQA": { "message": "页面内问答" },
-  "promptScreenshotSelection": { "message": "请根据当前浏览器截图回答题目，优先关注当前选中区域附近的题目。" },
-  "promptScreenshotPage": { "message": "请根据当前浏览器截图回答题目。" },
+  "toastConversationCleared": {
+    "message": "对话已清除"
+  },
+  "toastCopied": {
+    "message": "已复制到剪贴板"
+  },
+  "toastSettingsSaved": {
+    "message": "设置已保存 ✓"
+  },
+  "toastAntiDetectHint": {
+    "message": "。刷新网页后，文字选择辅助设置生效。"
+  },
+  "toastLogsCleared": {
+    "message": "调试日志已清除"
+  },
+  "toastScreenshotSynced": {
+    "message": "截图问答已自动同步"
+  },
+  "toastSyncedToSidebar": {
+    "message": "问答已同步到侧边栏"
+  },
+  "toastLanguageChanged": {
+    "message": "语言已切换，请重新打开面板生效"
+  },
+  "labelScreenshotQA": {
+    "message": "截图问答"
+  },
+  "labelInlineQA": {
+    "message": "页面内问答"
+  },
+  "promptScreenshotSelection": {
+    "message": "请根据当前浏览器截图回答题目，优先关注当前选中区域附近的题目。"
+  },
+  "promptScreenshotPage": {
+    "message": "请根据当前浏览器截图回答题目。"
+  },
   "systemPromptLabel": {
     "message": "System Prompt · $MODE$",
-    "placeholders": { "mode": { "content": "$1" } }
+    "placeholders": {
+      "mode": {
+        "content": "$1"
+      }
+    }
   },
   "systemPromptFor": {
     "message": "$MODE$的 System Prompt",
-    "placeholders": { "mode": { "content": "$1" } }
+    "placeholders": {
+      "mode": {
+        "content": "$1"
+      }
+    }
   },
-  "btnCopy": { "message": "复制" },
-  "btnCopied": { "message": "已复制 ✓" },
-  "btnCopyTitle": { "message": "复制" },
-  "logsEmpty": { "message": "暂无日志" },
-  "logsCleared": { "message": "日志已清除" },
-
-  "contextMenuAnswer": { "message": "🥷 解答这道题" },
-
-  "fabTitleDefault": { "message": "影学者 - 解答这道题" },
-  "fabTitleAnswer": { "message": "影学者 - 🎯 答案模式" },
-  "fabTitleIdea": { "message": "影学者 - 💡 思路模式" },
-  "fabTitleScreenshot": { "message": "影学者 - 📸 截图模式" },
-  "panelTitleDefault": { "message": "🥷 影学者" },
-  "panelTitleScreenshot": { "message": "📸 截图模式" },
-  "panelClose": { "message": "关闭" },
-  "panelBtnCopy": { "message": "📋 复制" },
-  "panelBtnCopied": { "message": "✅ 已复制" },
-  "panelBtnSidebar": { "message": "📌 发到侧边栏" },
-  "panelBtnAutoSync": { "message": "📸 自动同步" },
-  "panelBtnSynced": { "message": "✅ 已同步" },
-  "panelBtnSent": { "message": "✅ 已发送" },
-  "panelBtnAutoSynced": { "message": "✅ 已自动同步" },
-  "panelBtnSyncFailed": { "message": "⚠️ 同步失败" },
-  "panelErrorInvalidated": { "message": "⚠️ 扩展已更新，请刷新此页面后重试（Ctrl+R）" },
-  "panelErrorRefresh": { "message": "请刷新页面后重试" },
-  "panelErrorDisconnected": { "message": "连接中断" },
-  "panelScreenshotLabel": { "message": "当前浏览器截图" },
-  "panelScreenshotAux": { "message": "辅助文字：" },
-  "panelErrorExtUpdated": { "message": "⚠️ 扩展已更新，请刷新页面后重试" },
-
-  "popupOpenPanel": { "message": "打开影学者" },
-  "popupPanelDesc": { "message": "侧边面板 · 对话 & 答题" },
-  "popupModeLabel": { "message": "📋 模式" },
-  "popupAntiDetect": { "message": "🛡️ 反检测" },
-  "popupFullSettings": { "message": "⚙️ 完整设置" },
-  "popupStatusNotConfigured": { "message": "未配置" },
-  "popupStatusConnected": { "message": "已连接" },
-  "popupFooter": { "message": "v1.1.0 · 本地设置 · 快速响应" }
+  "btnCopy": {
+    "message": "复制"
+  },
+  "btnCopied": {
+    "message": "已复制 ✓"
+  },
+  "btnCopyTitle": {
+    "message": "复制"
+  },
+  "logsEmpty": {
+    "message": "暂无日志"
+  },
+  "logsCleared": {
+    "message": "日志已清除"
+  },
+  "contextMenuAnswer": {
+    "message": "🥷 解答这道题"
+  },
+  "fabTitleDefault": {
+    "message": "影学者 - 解答这道题"
+  },
+  "fabTitleAnswer": {
+    "message": "影学者 - 🎯 答案模式"
+  },
+  "fabTitleIdea": {
+    "message": "影学者 - 💡 思路模式"
+  },
+  "fabTitleScreenshot": {
+    "message": "影学者 - 📸 截图模式"
+  },
+  "panelTitleDefault": {
+    "message": "🥷 影学者"
+  },
+  "panelTitleScreenshot": {
+    "message": "📸 截图模式"
+  },
+  "panelClose": {
+    "message": "关闭"
+  },
+  "panelBtnCopy": {
+    "message": "📋 复制"
+  },
+  "panelBtnCopied": {
+    "message": "✅ 已复制"
+  },
+  "panelBtnSidebar": {
+    "message": "📌 发到侧边栏"
+  },
+  "panelBtnAutoSync": {
+    "message": "📸 自动同步"
+  },
+  "panelBtnSynced": {
+    "message": "✅ 已同步"
+  },
+  "panelBtnSent": {
+    "message": "✅ 已发送"
+  },
+  "panelBtnAutoSynced": {
+    "message": "✅ 已自动同步"
+  },
+  "panelBtnSyncFailed": {
+    "message": "⚠️ 同步失败"
+  },
+  "panelErrorInvalidated": {
+    "message": "⚠️ 扩展已更新，请刷新此页面后重试（Ctrl+R）"
+  },
+  "panelErrorRefresh": {
+    "message": "请刷新页面后重试"
+  },
+  "panelErrorDisconnected": {
+    "message": "连接中断"
+  },
+  "panelScreenshotLabel": {
+    "message": "当前浏览器截图"
+  },
+  "panelScreenshotAux": {
+    "message": "辅助文字："
+  },
+  "panelErrorExtUpdated": {
+    "message": "⚠️ 扩展已更新，请刷新页面后重试"
+  },
+  "popupOpenPanel": {
+    "message": "打开影学者"
+  },
+  "popupPanelDesc": {
+    "message": "侧边面板 · 对话 & 答题"
+  },
+  "popupModeLabel": {
+    "message": "📋 模式"
+  },
+  "popupAntiDetect": {
+    "message": "🛡️ 文字选择辅助"
+  },
+  "popupFullSettings": {
+    "message": "⚙️ 完整设置"
+  },
+  "popupStatusNotConfigured": {
+    "message": "未配置"
+  },
+  "popupStatusConnected": {
+    "message": "已配置"
+  },
+  "popupFooter": {
+    "message": "v1.1.0 · 本地设置 · 快速响应"
+  },
+  "dataDisclosure": {
+    "message": "你请求 AI 帮助时，消息、对话上下文、选中或提取的网页文字，以及截图模式下当前标签页的可见截图，将发送至上方配置的 API 地址。服务商还会接收 API 密钥和 IP 地址等连接信息。截图可能包含页面上可见的个人信息。设置、最多 50 条内联问答和 100 条待同步记录保存在本机。开发者不会收到这些数据。服务商可能按其隐私政策保留请求。"
+  },
+  "dataConsent": {
+    "message": "我同意在请求 AI 帮助时，将上述内容发送给我配置的 AI 服务商。"
+  },
+  "privacyPolicy": {
+    "message": "阅读隐私政策"
+  },
+  "clearLocalHistory": {
+    "message": "清除本地问答历史和待处理请求"
+  },
+  "toastHistoryCleared": {
+    "message": "本地问答历史和待处理请求已清除"
+  },
+  "dataNotice": {
+    "message": "AI 请求会将内容发送给你配置的服务商；截图模式会发送当前可见网页。可在设置中查看数据用途。"
+  },
+  "apiKeyRetention": {
+    "message": "API 密钥仅保存在本次浏览器会话内存中；重启 Chrome 或重新加载扩展后需重新填写。其他设置会保留。"
+  }
 }

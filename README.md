@@ -1,148 +1,75 @@
 # Shadow Scholar
 
-> An AI-powered browser study assistant for reading, problem analysis, and step-by-step explanations.
+A Chrome Manifest V3 reading and study assistant. Select webpage text, discuss it in a side panel, or explicitly capture the visible page for explanation by **your chosen OpenAI-compatible AI provider**.
 
-**Shadow Scholar** (影学者) is a Chrome extension that embeds an AI assistant directly into your browser. It helps you understand web content, organize selected text, analyze questions, and interact with your own configured AI provider from a focused side panel or inline overlay.
+## Features
 
-![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-4285F4?logo=google-chrome&logoColor=white)
-![Manifest V3](https://img.shields.io/badge/Manifest-V3-green)
-![License](https://img.shields.io/badge/License-MIT-blue)
+- Floating selection action, context-menu analysis, and side-panel conversations.
+- Answer, guided-hint, and screenshot modes, with editable prompts.
+- Streaming Markdown, safe links, tables, and working copy buttons.
+- English and Chinese interfaces.
+- Optional selection helper for copy/selection/context menus outside editors. It does not interfere with paste, focus, visibility, timers, or JavaScript execution.
 
-## ✨ Features
+## Install and configure
 
-### 🤖 AI-Powered Answering
-- **Inline floating button** — select text on any page and get instant AI answers in a sleek overlay panel
-- **Side panel chat** — full conversation interface with streaming responses and Markdown rendering
-- **Context menu** — right-click selected text to send it directly to the AI
-- **Page analysis** — extract and analyze entire page content with one click
-- **WEBテスト（SPI）personality mode** — keeps personality-test responses aligned to one consistent self-image
+Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/fjokopekhdlkbdaegfjnphiocpmiaimj), or load this directory as an unpacked extension from `chrome://extensions`. Chrome 116 or later is required.
 
-### 🔒 Local Privacy Controls
-Optional local privacy and page-interaction controls run only in the browser:
+1. Open the extension's side panel and Settings.
+2. Enter a compatible API endpoint, API key, and the provider's exact model ID.
+3. Read the data-use disclosure, agree if you want to send requests to that endpoint, and save.
+4. Select text and click the floating action, use the context menu, or use Analyze Page / Analyze Selection. In Screenshot Mode, each AI request includes a capture of the visible webpage.
 
-- **Clipboard and selection support** — helps keep copy, paste, cut, text selection, and context menus available on supported pages
-- **Local-only preferences** — settings are stored with `chrome.storage.local`
-- **User-controlled page helper** — the optional page interaction helper can be toggled on or off from settings
-- **No analytics** — no usage telemetry, advertising identifiers, or tracking scripts
+| Provider | Example endpoint | Model ID example |
+| --- | --- | --- |
+| OpenAI | `https://api.openai.com/v1` | `gpt-5.4-mini` |
+| OpenRouter | `https://openrouter.ai/api/v1` | `openai/gpt-5.4-mini` |
+| DeepSeek | `https://api.deepseek.com` | Provider-supported model ID |
+| Cloudflare AI Gateway | The gateway's OpenAI-compatible provider base URL | Provider-supported model ID |
+| Local Ollama | `http://localhost:11434/v1` | Installed local model name |
 
-### 🎨 Premium UI
-- Glassmorphism design with backdrop blur effects
-- Dark mode with vibrant gradient accents
-- Smooth micro-animations and transitions
-- Shadow DOM isolation — extension UI never interferes with page styles
-- Draggable inline answer panel
+Base URLs have `/chat/completions` appended; a bare origin gets `/v1/chat/completions`. Existing complete paths and query parameters are preserved. Ollama's local `/api` and `/api/chat` inputs are converted to its compatible `/v1/chat/completions` endpoint. Remote servers require HTTPS; HTTP is allowed only on loopback. Local servers can be used without an API key. Screenshot requests require a vision-capable model.
 
-### ⚡ Technical Highlights
-- **Manifest V3** compatible
-- **Streaming SSE** responses via `chrome.runtime.Port`
-- **Offscreen document** keep-alive mechanism for long streaming sessions
-- **Smart URL builder** — auto-detects and completes API endpoints for OpenAI, OpenRouter, Cloudflare Gateway, Ollama, etc.
-- **Configurable** — custom API URL, model, system prompt, and API key
+The extension is free; cloud providers may charge for requests. It does not include a provider account, paid API credits, or native Anthropic Messages API support.
 
-## 📦 Installation
+## Privacy and storage
 
-### From Source (Developer Mode)
+The developer operates no backend and receives no prompts, keys, screenshots, or answers. **Requested content does leave the browser when you use a remote AI provider.** Your selected text, page excerpts, typed messages, conversation context, and explicit screenshots are sent directly to the configured endpoint. The provider also receives network metadata. Its own retention and processing policies apply.
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/shadow-scholar.git
-   ```
+- API keys are held in trusted browser session memory and cleared on restart/reload/update. You will need to enter the key again after that. Preferences remain saved locally.
+- Up to 50 inline answers and 100 pending transfers are saved locally, with additional size limits. Use Settings → Clear saved local answers and pending requests to remove them.
+- Side-panel conversations live in memory. Clear Conversation removes the current conversation and cancels any active request.
+- The extension does not persist screenshot images, collect telemetry, load remote executable code, or render remote images from AI responses.
+- Consent is required before sending data, and changing the endpoint requires consent again.
 
-2. Open Chrome and navigate to `chrome://extensions/`
+See the complete [privacy policy](PRIVACY.md), including data categories, recipients, retention, deletion, and permission justifications.
 
-3. Enable **Developer mode** (top-right toggle)
+## Development and verification
 
-4. Click **Load unpacked** and select the cloned directory
+Node.js 22+ and npm are required for development. Install the locked dependencies with `npm ci --ignore-scripts`.
 
-5. Click the extension icon → Open **Settings** → Configure your API key
-
-### API Configuration
-
-Shadow Scholar defaults to OpenAI and also supports any OpenAI-compatible API endpoint:
-
-| Provider | Example URL |
-|----------|-------------|
-| OpenAI | `https://api.openai.com/v1/chat/completions` |
-| OpenRouter | `https://openrouter.ai/api/v1/chat/completions` |
-| Cloudflare AI Gateway | `https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway}/openrouter` |
-| Ollama (local) | `http://localhost:11434` |
-| DeepSeek | `https://api.deepseek.com` |
-| Any compatible endpoint | Just paste the base URL — paths are auto-completed |
-
-## 🚀 Usage
-
-### Quick Start
-1. **Select text** on any webpage → A floating "影" button appears
-2. **Click the button** → An inline panel opens with the AI's answer (streaming)
-3. **Copy** the answer or **send it to the side panel** for continued conversation
-
-### Side Panel
-- Click the extension icon to open the side panel
-- Use **"Analyze Page"** to extract and answer all questions on the current page
-- Use **"Analyze Selection"** to process selected text
-- Chat freely with the AI — full conversation history is maintained per session
-
-### Context Menu
-- Select text → Right-click → **"影学者：解答这道题"**
-- The side panel opens automatically with the AI's response
-
-## 🏗️ Architecture
-
-```
-shadow-scholar/
-├── manifest.json          # Extension manifest (MV3)
-├── prompts.js             # Prompt templates and task prompt builders
-├── settings.js            # Defaults, storage keys, migrations, API URL builder
-├── extractors.js          # Page, question, and selection extraction helpers
-├── anti-detect.js         # Optional local page interaction helper, dynamically registered
-├── content.js             # Content script (ISOLATED world) — floating UI + inline panel
-├── background.js          # Service worker — API calls, message routing, keep-alive
-├── sidepanel.html/js/css  # Side panel — full chat interface
-├── popup.html/js/css      # Popup — quick access & settings shortcut
-├── offscreen.html/js      # Offscreen document — SW keep-alive during streaming
-├── lib/
-│   └── marked.min.js      # Markdown parser
-└── icons/
-    ├── logo.svg
-    ├── icon16.png
-    ├── icon48.png
-    └── icon128.png
+```sh
+npm run verify
+npm audit
+npm run package
 ```
 
-### Key Design Decisions
+`verify` checks syntax, manifest references, translation coverage, MV3 inline-handler restrictions, the vendored Markdown dependency, and the affected behavior tests. Tests simulate Chrome APIs and DOM interactions; real Chrome release validation is also necessary.
 
-- **Optional page interaction helper** — dynamically registered only when enabled and applied on new page loads
-- **`content.js` runs in `ISOLATED` world** — keeps extension messaging secure and separate from page context
-- **Shared helper layers** — prompt, settings, and extraction logic are centralized in `prompts.js`, `settings.js`, and `extractors.js`
-- **Shadow DOM (`closed` mode)** — the inline UI is completely isolated from page CSS
-- **Port-based streaming** — uses `chrome.runtime.connect()` instead of one-shot messages for reliable SSE streaming
+`package` creates `dist/shadow-scholar-1.2.0.zip` using a fixed allowlist and verifies every archived file, CRC, and SHA-256. Private files, tests, dependencies, and local settings are excluded. The extension runs entirely from the packaged files; npm is not needed to use it.
 
-## ⚙️ Configuration
+## Architecture
 
-All settings are stored in `chrome.storage.local`:
+- `background.js`: trusted settings, session credentials, extraction, context-menu routing, and cancellable requests.
+- `stream.js`: bounded SSE decoding and stream cleanup.
+- `settings.js`: defaults, migration, and endpoint validation.
+- `extractors.js`: bounded page traversal without cloning the entire DOM.
+- `content.js`: isolated floating interface and inline responses.
+- `sidepanel.*`: chat, settings, consent, and local-data controls.
+- `markdown.js`: shared HTML allowlist around the vendored Marked parser.
+- `anti-detect.js`: legacy filename retained for the optional, narrowly scoped selection helper.
 
-| Key | Description | Default |
-|-----|-------------|---------|
-| `apiUrl` | LLM API endpoint URL | `https://api.openai.com/v1` |
-| `apiKey` | API authentication key | *(required)* |
-| `model` | Model identifier | `openai/gpt-5.4-mini` |
-| `systemPrompt` | Legacy answer-mode system prompt | Built-in exam assistant prompt |
-| `systemPrompts` | Mode-specific prompts for answer, idea, and WEBテスト（SPI）personality modes | Built-in prompts |
-| `antiDetect` | Enable/disable the optional local page interaction helper | `true` |
-| `mode` | Answer, idea, or WEBテスト（SPI）personality mode | `answer` |
+Long requests use a bounded, request-scoped keep-alive in accordance with Chrome's service-worker guidance. No hidden offscreen page is needed. Concurrent requests have independent cancellation and cleanup.
 
-## 🔒 Privacy
+## License
 
-- **No data collection** — all data stays in your browser's local storage
-- **No external analytics** — zero tracking or telemetry
-- **API key stored locally** — never transmitted except to your configured API endpoint
-- **Conversation history** — stored only in-memory (side panel) or local storage (inline history)
-
-## 📄 License
-
-MIT License — see [LICENSE](LICENSE) for details.
-
-## 🙏 Credits
-
-- [marked.js](https://github.com/markedjs/marked) — Markdown parsing
-- Icon design — custom emoji-based branding
+[MIT](LICENSE). The packaged [Marked parser](https://github.com/markedjs/marked) is also MIT-licensed; its license is included in `lib/marked.LICENSE`.

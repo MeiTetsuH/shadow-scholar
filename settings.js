@@ -5,7 +5,7 @@
 (() => {
   'use strict';
 
-  const DEFAULT_MODEL = 'openai/gpt-5.4-mini';
+  const DEFAULT_MODEL = 'gpt-5.4-mini';
   const DEFAULT_API_URL = 'https://api.openai.com/v1';
   const ANTI_DETECT_SCRIPT_ID = 'shadow-scholar-anti-detect-main';
   const PROMPT_MODES = Object.freeze(['answer', 'idea', 'personality']);
@@ -18,7 +18,8 @@
     'systemPrompts',
     'antiDetect',
     'mode',
-    'language'
+    'language',
+    'dataConsentEndpoint'
   ]);
 
   function getDefaultSystemPrompts() {
@@ -58,9 +59,10 @@
       model: DEFAULT_MODEL,
       systemPrompt: systemPrompts.answer,
       systemPrompts,
-      antiDetect: true,
+      antiDetect: false,
       mode: 'answer',
-      language: ''
+      language: '',
+      dataConsentEndpoint: ''
     };
   }
 
@@ -73,6 +75,10 @@
         updates[key] = defaults[key];
       }
     });
+
+    try {
+      if (current.model === 'openai/gpt-5.4-mini' && (!current.apiUrl || new URL(current.apiUrl).hostname === 'api.openai.com')) updates.model = DEFAULT_MODEL;
+    } catch { /* Invalid legacy endpoints remain editable in Settings. */ }
 
     const normalizedPrompts = normalizeSystemPrompts(current);
     if (typeof current.systemPrompt === 'undefined') {
@@ -99,24 +105,28 @@
       systemPrompt: systemPrompts.answer,
       systemPrompts,
       mode: current.mode || defaults.mode,
-      antiDetect: current.antiDetect !== false
+      antiDetect: current.antiDetect === true
     };
   }
 
   function buildChatCompletionsUrl(inputUrl) {
-    if (!inputUrl) return inputUrl;
-
-    let url = inputUrl.replace(/\/+$/, '');
-
-    if (url.includes('/chat/completions')) return url;
-    if (url.includes('gateway.ai.cloudflare.com')) return url + '/chat/completions';
-    if (url.includes('localhost') || url.includes('127.0.0.1')) {
-      if (url.includes('/api')) return url + '/chat';
-      return url + '/v1/chat/completions';
+    const url = new URL(String(inputUrl || DEFAULT_API_URL).trim());
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+    if (url.protocol !== 'https:' && !(url.protocol === 'http:' && loopback)) {
+      throw new Error('Use HTTPS, or HTTP on localhost for a local AI server.');
     }
-    if (url.endsWith('/v1')) return url + '/chat/completions';
-
-    return url + '/v1/chat/completions';
+    if (url.username || url.password || url.hash) {
+      throw new Error('API URLs must not contain credentials or fragments.');
+    }
+    let path = url.pathname.replace(/\/+$/, '');
+    // Ollama's native /api/chat uses a different protocol. Use its compatible API.
+    if (loopback && /^\/api(?:\/chat)?$/.test(path)) path = '/v1';
+    if (!path.endsWith('/chat/completions')) {
+      if (!path) path = '/v1';
+      path += '/chat/completions';
+    }
+    url.pathname = path;
+    return url.href;
   }
 
   globalThis.ShadowScholarSettings = Object.freeze({

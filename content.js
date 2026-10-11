@@ -104,7 +104,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     .ninja-panel {
       position: fixed;
       display: none;
-      width: 420px;
+      width: min(420px, calc(100vw - 16px));
       max-height: 480px;
       background: rgba(10, 11, 22, 0.62); /* 62% 的高透光透明度，完美融于页面背景并透射细节 */
       backdrop-filter: blur(28px) saturate(180%);
@@ -331,9 +331,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   // 初始化
   try {
-    chrome.storage.local.get('mode', (r) => updateFabMode(r.mode));
-    chrome.storage.onChanged.addListener((changes) => {
-      if (changes.mode) updateFabMode(changes.mode.newValue);
+    chrome.runtime.sendMessage({ type: 'get-ui-settings' }).then(r => updateFabMode(r.mode)).catch(() => {});
+    chrome.runtime.onMessage.addListener(message => {
+      if (message.type === 'ui-settings-changed') updateFabMode(message.settings.mode);
     });
   } catch(e) {}
 
@@ -361,6 +361,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const btnSidebar = panel.querySelector('[data-action="sidebar"]');
   const panelTitle = panel.querySelector('.ninja-panel-title');
 
+  let renderTimer = null;
   let selectedText = '';
   let currentQuestionText = '';
   let currentAnswer = '';
@@ -469,6 +470,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   function hidePanel() {
+    clearTimeout(renderTimer);
+    renderTimer = null;
     panel.style.display = 'none';
     if (currentPort) {
       try { currentPort.disconnect(); } catch(e) {}
@@ -543,12 +546,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     try {
       currentPort = chrome.runtime.connect({ name: 'llm-stream' });
 
-      currentPort.onMessage.addListener((msg) => {
+      const port = currentPort;
+      let finished = false;
+      port.onMessage.addListener((msg) => {
+        if (currentPort !== port) return;
         if (msg.type === 'chunk') {
           if (currentAnswer === '') panelBody.innerHTML = '';
           currentAnswer += msg.content;
-          renderMarkdown(currentAnswer);
+          if (renderTimer === null) renderTimer = setTimeout(() => { renderTimer = null; renderMarkdown(currentAnswer); }, 80);
         } else if (msg.type === 'done') {
+          finished = true;
+          clearTimeout(renderTimer);
+          renderTimer = null;
           renderMarkdown(currentAnswer);
           saveToHistory(currentQuestionText, currentAnswer);
           if (questionMode === 'personality') {
@@ -558,16 +567,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             });
           }
         } else if (msg.type === 'error') {
-          panelBody.innerHTML = `<p style="color:#f87171;">❌ ${msg.error}</p>`;
+          finished = true;
+          clearTimeout(renderTimer);
+          renderTimer = null;
+          panelBody.textContent = `❌ ${msg.error}`;
         }
       });
 
-      currentPort.onDisconnect.addListener(() => {
+      port.onDisconnect.addListener(() => {
+        if (currentPort !== port) return;
         currentPort = null;
+        clearTimeout(renderTimer);
+        renderTimer = null;
+        if (finished) return;
         // 如果还在加载中（没有收到内容），说明连接异常断开
-        if (currentAnswer === '' && panelBody.querySelector('.ninja-loading')) {
+        if (!finished) {
           const err = chrome.runtime.lastError?.message || I18n.t('panelErrorDisconnected');
-          panelBody.innerHTML = `<p style="color:#f87171;">⚠️ ${err}</p>
+          panelBody.innerHTML = `<p style="color:#f87171;">⚠️ ${escapeHtml(err)}</p>
             <p style="color:#94a3b8;font-size:12px;margin-top:6px;">${I18n.t('panelErrorRefresh')}</p>`;
         }
       });
@@ -582,7 +598,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (msg.includes('Extension context invalidated') || msg.includes('context')) {
         panelBody.innerHTML = `<p style="color:#f87171;">${I18n.t('panelErrorExtUpdated')}</p>`;
       } else {
-        panelBody.innerHTML = `<p style="color:#f87171;">❌ ${msg}</p>`;
+        panelBody.innerHTML = `<p style="color:#f87171;">❌ ${escapeHtml(msg)}</p>`;
       }
     }
   }
@@ -596,67 +612,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return div.innerHTML;
   }
 
-  function escapeAttr(text) {
-    return String(text)
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-
-  function renderSafeLink(label, href) {
-    let safeHref = '';
-    try {
-      const parsed = new URL(href, window.location.href);
-      if (['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
-        safeHref = parsed.href;
-      }
-    } catch (e) {}
-
-    if (!safeHref) return label;
-    return `<a href="${escapeAttr(safeHref)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
-  }
-
   function renderMarkdown(text) {
-    // 简易 markdown 转 HTML。先转义原文，再恢复允许的 markdown 结构。
-    let html = escapeHtml(text)
-      // code blocks
-      .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
-      // inline code
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      // headers
-      .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
-      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-      // bold
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      // italic
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      // hr
-      .replace(/^---$/gm, '<hr>')
-      // blockquote
-      .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-      // links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) => renderSafeLink(label, href))
-      // unordered list
-      .replace(/^- (.+)$/gm, '<li>$1</li>')
-      // ordered list
-      .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-      // paragraphs (double newline)
-      .replace(/\n\n/g, '</p><p>')
-      // single newline in non-pre context
-      .replace(/\n/g, '<br>');
-
-    // Wrap in paragraph if not starting with block element
-    if (!html.startsWith('<')) html = '<p>' + html;
-    if (!html.endsWith('>')) html += '</p>';
-
-    // Clean up consecutive li into ul
-    html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
-               .replace(/<\/ul>\s*<ul>/g, '');
-
-    panelBody.innerHTML = html;
+    panelBody.innerHTML = globalThis.ShadowScholarMarkdown.render(text);
     panelBody.scrollTop = panelBody.scrollHeight;
   }
 
@@ -669,14 +626,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         type: 'save-inline-history',
         question,
         answer,
-        url: window.location.href,
-        title: document.title,
         timestamp: Date.now()
       });
     } catch(e) {}
   }
 
-  function sendInlineAnswerToSidebar(question, answer, { auto = false, mode = currentMode } = {}) {
+  async function sendInlineAnswerToSidebar(question, answer, { auto = false, mode = currentMode } = {}) {
     if (currentSidebarSent) {
       btnSidebar.textContent = I18n.t('panelBtnSynced');
       return;
@@ -686,17 +641,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     currentSidebarRecordId = currentSidebarRecordId || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
     try {
-      chrome.runtime.sendMessage({
+      const result = await chrome.runtime.sendMessage({
         type: 'save-inline-to-sidebar',
         recordId: currentSidebarRecordId,
         question,
         answer,
         mode,
         auto,
-        url: window.location.href,
-        title: document.title,
         timestamp: Date.now()
       });
+      if (!result?.success) throw new Error('Could not save the record.');
       btnSidebar.textContent = auto ? I18n.t('panelBtnAutoSynced') : I18n.t('panelBtnSent');
     } catch(e) {
       currentSidebarSent = false;

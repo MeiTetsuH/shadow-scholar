@@ -4,138 +4,366 @@
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "AI-powered browser assistant for reading, analyzing, and summarizing web content. Built-in privacy shield protects your focus.",
-    "description": "Extension description"
+    "message": "Read, explain, and summarize webpages with your chosen AI provider. Includes text selection, side panel chat, and screenshots."
   },
-
-  "appName": { "message": "Shadow Scholar" },
-  "welcomeTitle": { "message": "Shadow Scholar" },
-  "welcomeDesc": { "message": "Your Smart Browser Assistant" },
-
-  "modeAnswer": { "message": "🎯 Answer Mode" },
-  "modeIdea": { "message": "💡 Idea Mode" },
-  "modeScreenshot": { "message": "📸 Screenshot Mode" },
-  "modeAnswerShort": { "message": "🎯 Answer" },
-  "modeIdeaShort": { "message": "💡 Idea" },
-  "modeScreenshotShort": { "message": "📸 Screenshot" },
-  "modeAnswerTitle": { "message": "Answer Mode: Give direct, complete answers" },
-  "modeIdeaTitle": { "message": "Idea Mode: Give hints and thinking frameworks only" },
-  "modeScreenshotTitle": { "message": "Screenshot Mode: Capture current page and analyze with AI" },
-  "hintAnswer": { "message": "Direct complete answers" },
-  "hintIdea": { "message": "Hints only, suitable for platforms with replay detection" },
-  "hintScreenshot": { "message": "Screenshot captures the current page for AI analysis" },
-
-  "statusNotConfigured": { "message": "API Key not configured" },
-  "statusConnected": { "message": "✅ API Connected" },
-  "statusNotConnected": { "message": "⚠️ API Key not set. Click to configure" },
-  "btnClearTitle": { "message": "Clear conversation" },
-  "btnSettingsTitle": { "message": "Settings" },
-
-  "settingsTitle": { "message": "⚙️ Settings" },
-  "settingApiUrl": { "message": "API URL" },
-  "settingApiUrlHint": { "message": "Defaults to OpenAI. Also supports any OpenAI-compatible endpoint. Auto-completes /chat/completions path." },
-  "settingApiKey": { "message": "API Key" },
-  "settingToggleVisibility": { "message": "Show/Hide" },
-  "settingModel": { "message": "Model Name" },
-  "settingModelHint": { "message": "e.g. openai/gpt-5.4-mini, deepseek-chat, gpt-4o, etc." },
-  "settingSystemPrompt": { "message": "System Prompt" },
-  "settingSystemPromptPlaceholder": { "message": "You are Shadow Scholar, a powerful AI assistant..." },
-  "settingAntiDetect": { "message": "Anti-Detection Mode" },
-  "settingAntiDetectHint": { "message": "Bypass page focus detection, visibility detection, and other restrictions" },
-  "settingLanguage": { "message": "Language" },
-  "settingLanguageHint": { "message": "Reopen the panel to apply changes" },
-  "langZh": { "message": "中文" },
-  "langEn": { "message": "English" },
-  "btnSaveSettings": { "message": "Save Settings" },
-  "btnShowLogs": { "message": "🔍 View Debug Logs" },
-  "btnHideLogs": { "message": "🔍 Hide Debug Logs" },
-  "btnClearLogs": { "message": "🗑️ Clear Logs" },
-
-  "btnAnalyzePage": { "message": "Analyze Current Page" },
-  "btnAnalyzeSelection": { "message": "Analyze Selection" },
-  "btnQuickPageTitle": { "message": "Analyze Page" },
-  "btnQuickSelectionTitle": { "message": "Analyze Selection" },
-  "inputPlaceholder": { "message": "Type a message..." },
-  "btnSendTitle": { "message": "Send" },
-
+  "appName": {
+    "message": "Shadow Scholar"
+  },
+  "welcomeTitle": {
+    "message": "Shadow Scholar"
+  },
+  "welcomeDesc": {
+    "message": "Your Smart Browser Assistant"
+  },
+  "modeAnswer": {
+    "message": "🎯 Answer Mode"
+  },
+  "modeIdea": {
+    "message": "💡 Idea Mode"
+  },
+  "modeScreenshot": {
+    "message": "📸 Screenshot Mode"
+  },
+  "modeAnswerShort": {
+    "message": "🎯 Answer"
+  },
+  "modeIdeaShort": {
+    "message": "💡 Idea"
+  },
+  "modeScreenshotShort": {
+    "message": "📸 Screenshot"
+  },
+  "modeAnswerTitle": {
+    "message": "Answer Mode: Give direct, complete answers"
+  },
+  "modeIdeaTitle": {
+    "message": "Idea Mode: Give hints and thinking frameworks only"
+  },
+  "modeScreenshotTitle": {
+    "message": "Screenshot Mode: Capture current page and analyze with AI"
+  },
+  "hintAnswer": {
+    "message": "Direct complete answers"
+  },
+  "hintIdea": {
+    "message": "Guided hints and short examples"
+  },
+  "hintScreenshot": {
+    "message": "Screenshot captures the current page for AI analysis"
+  },
+  "statusNotConfigured": {
+    "message": "API Key not configured"
+  },
+  "statusConnected": {
+    "message": "API key configured (connection not tested)"
+  },
+  "statusNotConnected": {
+    "message": "Configure your AI provider in Settings"
+  },
+  "btnClearTitle": {
+    "message": "Clear conversation"
+  },
+  "btnSettingsTitle": {
+    "message": "Settings"
+  },
+  "settingsTitle": {
+    "message": "⚙️ Settings"
+  },
+  "settingApiUrl": {
+    "message": "API URL"
+  },
+  "settingApiUrlHint": {
+    "message": "Defaults to OpenAI. Also supports any OpenAI-compatible endpoint. Auto-completes /chat/completions path."
+  },
+  "settingApiKey": {
+    "message": "API Key"
+  },
+  "settingToggleVisibility": {
+    "message": "Show/Hide"
+  },
+  "settingModel": {
+    "message": "Model Name"
+  },
+  "settingModelHint": {
+    "message": "Use the exact model ID from your provider, for example gpt-5.4-mini for OpenAI or openai/gpt-5.4-mini for OpenRouter."
+  },
+  "settingSystemPrompt": {
+    "message": "System Prompt"
+  },
+  "settingSystemPromptPlaceholder": {
+    "message": "You are Shadow Scholar, a powerful AI assistant..."
+  },
+  "settingAntiDetect": {
+    "message": "Selection helper"
+  },
+  "settingAntiDetectHint": {
+    "message": "Optional copy, selection, and context menu support outside editors. Refresh pages after changing this setting."
+  },
+  "settingLanguage": {
+    "message": "Language"
+  },
+  "settingLanguageHint": {
+    "message": "Reopen the panel to apply changes"
+  },
+  "langZh": {
+    "message": "中文"
+  },
+  "langEn": {
+    "message": "English"
+  },
+  "btnSaveSettings": {
+    "message": "Save Settings"
+  },
+  "btnShowLogs": {
+    "message": "🔍 View Debug Logs"
+  },
+  "btnHideLogs": {
+    "message": "🔍 Hide Debug Logs"
+  },
+  "btnClearLogs": {
+    "message": "🗑️ Clear Logs"
+  },
+  "btnAnalyzePage": {
+    "message": "Analyze Current Page"
+  },
+  "btnAnalyzeSelection": {
+    "message": "Analyze Selection"
+  },
+  "btnQuickPageTitle": {
+    "message": "Analyze Page"
+  },
+  "btnQuickSelectionTitle": {
+    "message": "Analyze Selection"
+  },
+  "inputPlaceholder": {
+    "message": "Type a message..."
+  },
+  "btnSendTitle": {
+    "message": "Send"
+  },
   "toastImportedRecords": {
     "message": "Imported $COUNT$ inline Q&A records",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "toastModeSwitched": {
     "message": "Switched to $MODE$",
-    "placeholders": { "mode": { "content": "$1" } }
+    "placeholders": {
+      "mode": {
+        "content": "$1"
+      }
+    }
   },
-  "toastCapturing": { "message": "Capturing browser screenshot..." },
-  "toastFetchingPage": { "message": "Fetching page content..." },
+  "toastCapturing": {
+    "message": "Capturing browser screenshot..."
+  },
+  "toastFetchingPage": {
+    "message": "Fetching page content..."
+  },
   "toastPageContentError": {
     "message": "Failed to get page content: $ERROR$",
-    "placeholders": { "error": { "content": "$1" } }
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   },
-  "toastPageContentEmpty": { "message": "Failed to get page content. Make sure you're not on a browser internal page." },
-  "toastSelectionError": { "message": "Failed to get selected text" },
-  "toastSelectFirst": { "message": "Please select text on the page first" },
+  "toastPageContentEmpty": {
+    "message": "Failed to get page content. Make sure you're not on a browser internal page."
+  },
+  "toastSelectionError": {
+    "message": "Failed to get selected text"
+  },
+  "toastSelectFirst": {
+    "message": "Please select text on the page first"
+  },
   "toastOperationFailed": {
     "message": "Operation failed: $ERROR$",
-    "placeholders": { "error": { "content": "$1" } }
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   },
-  "toastConversationCleared": { "message": "Conversation cleared" },
-  "toastCopied": { "message": "Copied to clipboard" },
-  "toastSettingsSaved": { "message": "Settings saved ✓" },
-  "toastAntiDetectHint": { "message": ". Refresh the page after disabling anti-detection" },
-  "toastLogsCleared": { "message": "Debug logs cleared" },
-  "toastScreenshotSynced": { "message": "Screenshot Q&A auto-synced" },
-  "toastSyncedToSidebar": { "message": "Q&A synced to sidebar" },
-  "toastLanguageChanged": { "message": "Language changed. Please reopen the panel to apply." },
-
-  "labelScreenshotQA": { "message": "Screenshot Q&A" },
-  "labelInlineQA": { "message": "Inline Q&A" },
-  "promptScreenshotSelection": { "message": "Based on the browser screenshot, answer the questions, focusing on the area near the current selection." },
-  "promptScreenshotPage": { "message": "Based on the browser screenshot, answer the questions." },
+  "toastConversationCleared": {
+    "message": "Conversation cleared"
+  },
+  "toastCopied": {
+    "message": "Copied to clipboard"
+  },
+  "toastSettingsSaved": {
+    "message": "Settings saved ✓"
+  },
+  "toastAntiDetectHint": {
+    "message": ". Refresh pages to apply selection-helper changes."
+  },
+  "toastLogsCleared": {
+    "message": "Debug logs cleared"
+  },
+  "toastScreenshotSynced": {
+    "message": "Screenshot Q&A auto-synced"
+  },
+  "toastSyncedToSidebar": {
+    "message": "Q&A synced to sidebar"
+  },
+  "toastLanguageChanged": {
+    "message": "Language changed. Please reopen the panel to apply."
+  },
+  "labelScreenshotQA": {
+    "message": "Screenshot Q&A"
+  },
+  "labelInlineQA": {
+    "message": "Inline Q&A"
+  },
+  "promptScreenshotSelection": {
+    "message": "Based on the browser screenshot, answer the questions, focusing on the area near the current selection."
+  },
+  "promptScreenshotPage": {
+    "message": "Based on the browser screenshot, answer the questions."
+  },
   "systemPromptLabel": {
     "message": "System Prompt · $MODE$",
-    "placeholders": { "mode": { "content": "$1" } }
+    "placeholders": {
+      "mode": {
+        "content": "$1"
+      }
+    }
   },
   "systemPromptFor": {
     "message": "System Prompt for $MODE$",
-    "placeholders": { "mode": { "content": "$1" } }
+    "placeholders": {
+      "mode": {
+        "content": "$1"
+      }
+    }
   },
-  "btnCopy": { "message": "Copy" },
-  "btnCopied": { "message": "Copied ✓" },
-  "btnCopyTitle": { "message": "Copy" },
-  "logsEmpty": { "message": "No logs yet" },
-  "logsCleared": { "message": "Logs cleared" },
-
-  "contextMenuAnswer": { "message": "🥷 Answer this question" },
-
-  "fabTitleDefault": { "message": "Shadow Scholar - Answer this" },
-  "fabTitleAnswer": { "message": "Shadow Scholar - 🎯 Answer Mode" },
-  "fabTitleIdea": { "message": "Shadow Scholar - 💡 Idea Mode" },
-  "fabTitleScreenshot": { "message": "Shadow Scholar - 📸 Screenshot Mode" },
-  "panelTitleDefault": { "message": "🥷 Shadow Scholar" },
-  "panelTitleScreenshot": { "message": "📸 Screenshot Mode" },
-  "panelClose": { "message": "Close" },
-  "panelBtnCopy": { "message": "📋 Copy" },
-  "panelBtnCopied": { "message": "✅ Copied" },
-  "panelBtnSidebar": { "message": "📌 Send to Sidebar" },
-  "panelBtnAutoSync": { "message": "📸 Auto Sync" },
-  "panelBtnSynced": { "message": "✅ Synced" },
-  "panelBtnSent": { "message": "✅ Sent" },
-  "panelBtnAutoSynced": { "message": "✅ Auto Synced" },
-  "panelBtnSyncFailed": { "message": "⚠️ Sync Failed" },
-  "panelErrorInvalidated": { "message": "⚠️ Extension updated. Please refresh this page (Ctrl+R)." },
-  "panelErrorRefresh": { "message": "Please refresh the page and try again" },
-  "panelErrorDisconnected": { "message": "Connection lost" },
-  "panelScreenshotLabel": { "message": "Current browser screenshot" },
-  "panelScreenshotAux": { "message": "Auxiliary text:" },
-  "panelErrorExtUpdated": { "message": "⚠️ Extension updated. Please refresh the page." },
-
-  "popupOpenPanel": { "message": "Open Shadow Scholar" },
-  "popupPanelDesc": { "message": "Side Panel · Chat & Q&A" },
-  "popupModeLabel": { "message": "📋 Mode" },
-  "popupAntiDetect": { "message": "🛡️ Anti-Detection" },
-  "popupFullSettings": { "message": "⚙️ Full Settings" },
-  "popupStatusNotConfigured": { "message": "Not Configured" },
-  "popupStatusConnected": { "message": "Connected" },
-  "popupFooter": { "message": "v1.1.0 · Local Settings · Fast Response" }
+  "btnCopy": {
+    "message": "Copy"
+  },
+  "btnCopied": {
+    "message": "Copied ✓"
+  },
+  "btnCopyTitle": {
+    "message": "Copy"
+  },
+  "logsEmpty": {
+    "message": "No logs yet"
+  },
+  "logsCleared": {
+    "message": "Logs cleared"
+  },
+  "contextMenuAnswer": {
+    "message": "🥷 Answer this question"
+  },
+  "fabTitleDefault": {
+    "message": "Shadow Scholar - Answer this"
+  },
+  "fabTitleAnswer": {
+    "message": "Shadow Scholar - 🎯 Answer Mode"
+  },
+  "fabTitleIdea": {
+    "message": "Shadow Scholar - 💡 Idea Mode"
+  },
+  "fabTitleScreenshot": {
+    "message": "Shadow Scholar - 📸 Screenshot Mode"
+  },
+  "panelTitleDefault": {
+    "message": "🥷 Shadow Scholar"
+  },
+  "panelTitleScreenshot": {
+    "message": "📸 Screenshot Mode"
+  },
+  "panelClose": {
+    "message": "Close"
+  },
+  "panelBtnCopy": {
+    "message": "📋 Copy"
+  },
+  "panelBtnCopied": {
+    "message": "✅ Copied"
+  },
+  "panelBtnSidebar": {
+    "message": "📌 Send to Sidebar"
+  },
+  "panelBtnAutoSync": {
+    "message": "📸 Auto Sync"
+  },
+  "panelBtnSynced": {
+    "message": "✅ Synced"
+  },
+  "panelBtnSent": {
+    "message": "✅ Sent"
+  },
+  "panelBtnAutoSynced": {
+    "message": "✅ Auto Synced"
+  },
+  "panelBtnSyncFailed": {
+    "message": "⚠️ Sync Failed"
+  },
+  "panelErrorInvalidated": {
+    "message": "⚠️ Extension updated. Please refresh this page (Ctrl+R)."
+  },
+  "panelErrorRefresh": {
+    "message": "Please refresh the page and try again"
+  },
+  "panelErrorDisconnected": {
+    "message": "Connection lost"
+  },
+  "panelScreenshotLabel": {
+    "message": "Current browser screenshot"
+  },
+  "panelScreenshotAux": {
+    "message": "Auxiliary text:"
+  },
+  "panelErrorExtUpdated": {
+    "message": "⚠️ Extension updated. Please refresh the page."
+  },
+  "popupOpenPanel": {
+    "message": "Open Shadow Scholar"
+  },
+  "popupPanelDesc": {
+    "message": "Side Panel · Chat & Q&A"
+  },
+  "popupModeLabel": {
+    "message": "📋 Mode"
+  },
+  "popupAntiDetect": {
+    "message": "🛡️ Selection Helper"
+  },
+  "popupFullSettings": {
+    "message": "⚙️ Full Settings"
+  },
+  "popupStatusNotConfigured": {
+    "message": "Not Configured"
+  },
+  "popupStatusConnected": {
+    "message": "Configured"
+  },
+  "popupFooter": {
+    "message": "v1.1.0 · Local Settings · Fast Response"
+  },
+  "dataDisclosure": {
+    "message": "When you request AI help, your messages, conversation context, selected/page text, or the visible tab screenshot (in Screenshot Mode) are sent to the API address above. The provider also receives your API key and connection metadata such as your IP address. Screenshots may include personal content visible on the page. Settings and up to 50 inline answers and 100 pending transfers are stored locally. The developer receives none of this data. Your provider may retain requests under its own policy."
+  },
+  "dataConsent": {
+    "message": "I agree to send this content to my configured AI provider when I request AI help."
+  },
+  "privacyPolicy": {
+    "message": "Read the privacy policy"
+  },
+  "clearLocalHistory": {
+    "message": "Clear saved local answers and pending requests"
+  },
+  "toastHistoryCleared": {
+    "message": "Saved local answers and pending requests cleared"
+  },
+  "dataNotice": {
+    "message": "AI requests send content to your configured provider. Screenshot Mode sends the visible webpage. Review data use in Settings."
+  },
+  "apiKeyRetention": {
+    "message": "Your API key is kept in browser session memory and is cleared when Chrome restarts or the extension reloads. Other settings remain saved."
+  }
 }

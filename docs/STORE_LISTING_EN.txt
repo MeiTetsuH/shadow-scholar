@@ -1,0 +1,28 @@
+Shadow Scholar — AI reading and study help in your browser
+
+Select text for an explanation, summarize a webpage, or discuss it in a focused side panel using your own OpenAI-compatible AI provider.
+
+Features
+• Floating selection action and right-click analysis.
+• Side-panel chat with streaming responses, Markdown, tables, and copy buttons.
+• Answer Mode for explanations and Idea Mode for guided hints.
+• Screenshot Mode for translating or explaining the visible webpage. Each request in this mode sends a fresh screenshot to your configured provider; a vision-capable model is required.
+• English and Chinese interfaces and editable mode-specific prompts.
+• Optional selection helper for copying, selection, and context menus outside editors. It does not modify pasting, focus, page visibility, timers, or JavaScript execution.
+
+Bring your own AI
+Configure an API URL, model ID, and API key for OpenAI, OpenRouter, DeepSeek, a compatible gateway, or a local server such as Ollama. The extension does not supply an AI account or API credits. Your provider may charge for requests. Remote endpoints require HTTPS; HTTP is supported only for a server on your own computer. Native Anthropic Messages endpoints are not supported.
+
+Data use and your controls
+When you request AI help, selected or extracted page text, typed messages, conversation context, custom prompts, or the visible screenshot are sent directly to the endpoint you configure. That provider receives your API key and network metadata and may retain requests under its own policy. Screenshots can contain personal information visible on the page. Review the content before sending.
+
+The developer operates no backend and receives no prompts, keys, screenshots, or answers. There is no analytics or advertising telemetry. Data-use consent is required before the first AI request and again when the endpoint changes.
+
+API keys are held only in browser session memory and must be entered again after restarting Chrome or reloading the extension. Preferences and up to 50 inline answers and 100 pending transfers are stored locally, with additional size limits. Settings includes a control to clear saved local answers and pending requests. Screenshots are not saved in extension history. Clearing local data cannot delete requests already retained by your provider.
+
+Website access supports the floating interface, requested page extraction, screenshots, and custom AI endpoints. No automatic background page uploads occur. Some protected browser and store pages do not allow extensions.
+
+Version 1.2.0 improves streaming cancellation, final-chunk handling, clipboard compatibility, safe Markdown rendering, and rendering performance. It also adds clearer data disclosures and removes the hidden offscreen keep-alive page.
+
+Source and support: https://github.com/MeiTetsuH/shadow-scholar
+Privacy policy: https://github.com/MeiTetsuH/shadow-scholar/blob/master/PRIVACY.md

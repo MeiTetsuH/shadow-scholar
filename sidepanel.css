@@ -1258,3 +1258,12 @@ html, body {
 .debug-logs .log-source-sp {
   color: #38bdf8;
 }
+
+/* Data use stays visible before any user-initiated request. */
+.data-notice { font-size: 11px; line-height: 1.5; color: var(--text-secondary); margin: 0 0 6px; }
+.privacy-disclosure { font-size: 12px; line-height: 1.6; }
+.privacy-disclosure label { display: block; margin: 8px 0; }
+.privacy-disclosure a { color: #a5b4fc; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

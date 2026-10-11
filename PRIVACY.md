@@ -1,76 +1,65 @@
 # Privacy Policy — Shadow Scholar
 
-**Last updated:** May 22, 2026
+Last updated: October 11, 2026. Applies to version 1.2.0 and later.
 
-## Overview
+Shadow Scholar is an open-source Chrome extension for reading, studying, and discussing web content with an AI service that you choose. The developer, MeiTetsuH (publisher: Akira), does not operate a backend for the extension and does not receive your API keys, prompts, screenshots, or answers. This does **not** mean the extension never handles or transmits data: the processing described below is necessary for its features.
 
-Shadow Scholar ("the Extension") is an AI-powered study and reading assistant browser extension. We are committed to protecting your privacy. This privacy policy explains what data the Extension accesses, how it is used, and your choices.
+## What the extension accesses and why
 
-## Data Collection
+| Data | When accessed and purpose | Storage and recipient |
+| --- | --- | --- |
+| Selected webpage text | Selection is read locally to display a floating action. Clicking that action or choosing the context menu requests an explanation. Selection alone does not send an AI request. | Sent directly to your configured AI endpoint only when you request AI help; completed inline questions and answers may be saved locally. |
+| Page text and title | Clicking Analyze Page extracts up to 20,000 characters locally, with up to 8,000 characters included in the page-analysis prompt. Script, navigation, hidden attributes, and form controls are excluded where detectable. | Requested text and the page title are sent to your configured AI endpoint. Extraction cannot guarantee removal of all personal information in visible text. |
+| Visible tab screenshot | A user request in Screenshot Mode captures the visible portion of the active HTTP/HTTPS tab. It can include names, messages, documents, images, or other personal or sensitive information visible on the page. It does not capture other windows or the entire desktop. | Sent directly to your configured AI endpoint for visual explanation. Image data is held temporarily for that request and is not written to the extension's saved history. |
+| Typed messages, custom system prompts, conversation context, and AI responses | Used to answer questions and continue the conversation. Prior messages in the open panel are included in follow-up requests. Imported inline answers become part of that conversation. | Text is sent to the configured endpoint. Panel conversations are held in memory until cleared or the panel closes. Completed inline answers and pending transfers are stored locally as described below. |
+| API key | Used to authenticate requests to the endpoint you configure. | Kept in `chrome.storage.session` memory, accessible only to trusted extension contexts. Sent as the Authorization header to your configured endpoint. It is not sent to the developer. It is cleared when Chrome restarts or the extension is disabled, reloaded, or updated. |
+| API endpoint, model ID, language, mode, custom prompts, consent choice, and helper preference | Used to configure the requested features and remember your choices. | Saved in `chrome.storage.local` on this device. The model ID and applicable system prompt are included in AI requests. |
+| Technical request metadata | Your AI provider receives network information, such as your IP address, request time, and HTTP headers, when you connect. | Received and potentially retained by your provider under its own policy. The extension has no analytics service. |
 
-**Shadow Scholar does not collect, store, or transmit any personal data to us or any third party.**
+The extension does not read browser passwords, cookies, your full browsing history, or background tabs to build a profile. It does not record keystroke or pointer activity for analytics. It listens locally for selection and button interactions to operate the interface. Information that you type, select, or capture can itself contain personal communications, identifying information, or other sensitive data; review that content before requesting analysis.
 
-All data processed by the Extension stays on your local device unless you explicitly choose to send it to your own configured AI API endpoint.
+## Transmission and your consent
 
-## Data Accessed
+Before the first AI request, the settings interface describes the data sent and asks you to explicitly agree. Consent is tied to the configured API endpoint. Changing that endpoint requires agreement again. You can revoke consent by unchecking the agreement and saving settings. The extension blocks AI requests until consent is present.
 
-### Website Content
-When you explicitly trigger an analysis (by clicking the floating button, using the context menu, or pressing "Analyze Page"), the Extension reads text content from the current webpage. This content is:
-- Sent **only** to the AI API endpoint that **you** configure in the Extension settings
-- **Never** sent to us or any other third party
-- **Not** stored permanently — conversation data is kept in browser memory during the session and in local storage for history
+Text mode sends text. Every request in Screenshot Mode includes a new capture of the visible webpage, including requests made using the floating button, context menu, or panel. The mode is indicated in the interface. Requests occur in response to your actions, not on a background schedule. Closing or clearing an active conversation cancels its outstanding network request; this cannot recall data already received by a provider.
 
-### User Configuration
-The Extension stores the following settings locally on your device using `chrome.storage.local`:
-- API endpoint URL
-- API Key (stored locally, never transmitted except to your configured endpoint)
-- AI model name
-- System prompt customization
-- Feature toggle preferences
+Remote endpoints must use HTTPS. Unencrypted HTTP is allowed only for a service on your own computer at localhost, 127.0.0.1, or ::1. Requests do not follow redirects and omit browser cookies. Provider responses are treated as text, and executable scripts and remote images are not rendered from AI responses.
 
-This data **never leaves your browser** except when making API requests to your own configured endpoint.
+## Who receives or can access the data
 
-## Data NOT Collected
+- **Your configured AI provider or gateway:** the exact API address in settings receives requests. Examples include OpenAI, OpenRouter, DeepSeek, Cloudflare AI Gateway, or a local OpenAI-compatible server such as Ollama. Only the endpoint you select is contacted; these examples are not additional automatic recipients. If you select a gateway or proxy, it may forward requests to an upstream model provider. Consult both policies and settings.
+- **The extension developer:** does not receive extension usage data and has no access to your local extension storage. There are no developer-operated analytics, advertising, or telemetry endpoints.
+- **People with access to your browser profile/device:** may be able to access saved local answers and preferences. Local storage is not a password vault and the extension does not claim to encrypt saved history. Avoid saving secrets in prompts or the API URL.
+- **GitHub or the Chrome Web Store:** opening a source, support, privacy-policy, or store link visits that service under its own policies. If you voluntarily post an issue, its contents may be public. Do not include API keys or private prompts in public issues.
 
-Shadow Scholar does **not** collect:
-- Personal identification information
-- Browsing history or web activity
-- Cookies or tracking data
-- Location data
-- Financial information
-- Analytics or telemetry data
-- Keystroke or mouse activity logs
+External providers determine their own retention, training, regional processing, access, and deletion practices. The developer does not control these practices. A local endpoint stays on your computer only if the local server itself does not forward requests. Cloud AI features require connectivity and may incur charges from your chosen provider; the extension does not process payments.
 
-## Third-Party Services
+## Local retention and deletion
 
-The Extension connects to external AI API endpoints (e.g., OpenAI, DeepSeek, OpenRouter) **only as configured by you**. The Extension itself does not operate any server or backend service. Please review the privacy policy of your chosen AI API provider.
+- Preferences and custom prompts remain locally until you change them or uninstall the extension.
+- API keys remain in browser session memory only. On upgrade from a version that stored a key locally, the extension copies it into session memory before removing the old persistent copy.
+- Inline history retains at most 50 completed question/answer records. Pending transfers retain at most 100 records until imported and acknowledged by the side panel. Each collection also has a size limit and evicts older records first. Records include a timestamp and mode; pending transfers may include a local window ID used to route them correctly.
+- Context-menu requests are kept locally until claimed, replaced, cleared, or discarded as expired when the panel next checks them. They include text, a timestamp, and local tab/window identifiers.
+- Screenshots are not saved in extension history. Text extracted or inferred by the AI may appear in a saved answer.
+- Clear Conversation removes the current panel conversation from memory. **Settings → Clear saved local answers and pending requests** removes saved inline history, pending transfers, queued requests, and old diagnostic logs, and clears the open conversation.
+- Previous versions could save page URLs/titles with inline answers and diagnostic logs. The 1.2.0 upgrade removes those record fields and clears previous diagnostic logs. New versions do not persist debug logs.
+- Removing the extension removes its local extension storage. These controls do not delete requests already retained by your AI provider; contact that provider to request deletion.
 
-## Local Privacy and Page Interaction Controls
+## Permissions and optional page helper
 
-The Extension includes optional local controls intended to improve page interaction and user privacy while using the assistant. These controls may help preserve normal browser interactions such as text selection, clipboard actions, and context menu access on supported pages. This feature:
-- Runs entirely on your local device
-- Does not collect or transmit any data
-- Can be toggled on/off at any time from the Extension settings
-- Applies only in the browser and does not create any developer-operated data collection
+`activeTab` and `scripting` enable user-requested extraction and visible-tab capture. `contextMenus` provides the selected-text action. `sidePanel` displays the conversation. `storage` saves the local preferences and session data described above.
 
-## Permissions
+The `<all_urls>` host permission is required by Chrome for visible-tab capture when a panel action does not carry a fresh `activeTab` grant. Page extraction and screenshots are restricted by the extension to HTTP/HTTPS tabs. Host access also lets the floating selection interface work on supported webpages and lets you choose an arbitrary compatible API endpoint. It is not used for automatic page uploads or browsing analytics. Browser-internal pages and store pages may prohibit extension access. You can restrict site access in Chrome; some features will then be unavailable on those sites.
 
-The Extension requests the following browser permissions:
-- **activeTab / scripting**: To read page content when you request analysis
-- **storage**: To save your local settings and preferences
-- **sidePanel**: To display the chat interface
-- **contextMenus**: To provide right-click analysis option
-- **offscreen**: To maintain API connection during streaming responses
-- **Host permissions**: To access page content on any site and connect to your configured API endpoint
+The optional selection helper is off by default on a fresh install and can be disabled in settings. It helps preserve copying, text selection, and context menus outside editable controls. It does not read the clipboard, alter pasting/cutting, falsify focus or visibility, intercept JavaScript execution, or transmit data. Refresh existing pages after changing this setting.
 
-## Children's Privacy
+## Limited Use
 
-The Extension is not directed at children under 13 and does not knowingly collect data from children.
+Shadow Scholar's use and transfer of information received from Google APIs adheres to the Chrome Web Store User Data Policy, including its Limited Use requirements. Data is used only for the prominently described reading and study features. The extension does not sell user data, use it for advertising or creditworthiness decisions, or provide it to the developer for human review. Transfers to the user-selected AI endpoint occur only to fulfill the user's request.
 
-## Changes to This Policy
+## Changes and contact
 
-We may update this privacy policy from time to time. Changes will be reflected in the "Last updated" date above.
+Policy updates will be published here with a new date. Material changes to endpoint data handling require an updated in-product disclosure and consent flow.
 
-## Contact
-
-If you have questions about this privacy policy, please open an issue on our [GitHub repository](https://github.com/MeiTetsuH/shadow-scholar).
+For questions, contact the maintainer through [GitHub Issues](https://github.com/MeiTetsuH/shadow-scholar/issues). Share only non-sensitive details because issues are public.

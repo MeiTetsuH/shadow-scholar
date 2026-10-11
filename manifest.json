@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
   "permissions": [
@@ -9,8 +9,7 @@
     "contextMenus",
     "storage",
     "scripting",
-    "sidePanel",
-    "offscreen"
+    "sidePanel"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -30,8 +29,18 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["i18n.js", "prompts.js", "extractors.js", "content.js"],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "i18n.js",
+        "prompts.js",
+        "extractors.js",
+        "lib/marked.min.js",
+        "markdown.js",
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -39,5 +48,6 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "minimum_chrome_version": "116"
 }

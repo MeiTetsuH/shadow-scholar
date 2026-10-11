@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   I18n.applyI18n();
 
   // 检查 API 配置状态 & 当前模式
-  chrome.storage.local.get(Settings.SETTINGS_KEYS, (result) => {
+  chrome.runtime.sendMessage({ type: 'get-settings' }, (result) => {
     const settings = Settings.normalizeSettings(result);
     const statusBadge = document.getElementById('status-badge');
     const statusText = statusBadge.querySelector('.status-text');

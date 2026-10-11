@@ -66,9 +66,10 @@
               </button>
             </div>
           </div>
+          <p class="form-hint" data-i18n="apiKeyRetention"></p>
           <div class="form-group">
             <label for="setting-model" data-i18n="settingModel">模型名称</label>
-            <input type="text" id="setting-model" placeholder="openai/gpt-5.4-mini" class="form-input">
+            <input type="text" id="setting-model" placeholder="gpt-5.4-mini" class="form-input">
             <span class="form-hint" data-i18n="settingModelHint">如 openai/gpt-5.4-mini, deepseek-chat, gpt-4o 等</span>
           </div>
           <div class="form-group">
@@ -79,7 +80,7 @@
             <label class="toggle-label">
               <span data-i18n="settingAntiDetect">反检测模式</span>
               <div class="toggle-switch">
-                <input type="checkbox" id="setting-anti-detect" checked>
+                <input type="checkbox" id="setting-anti-detect">
                 <span class="toggle-slider"></span>
               </div>
             </label>
@@ -93,16 +94,15 @@
             </select>
             <span class="form-hint" data-i18n="settingLanguageHint">切换后重新打开面板生效</span>
           </div>
+          <div class="form-group privacy-disclosure">
+            <p data-i18n="dataDisclosure"></p>
+            <label><input type="checkbox" id="setting-data-consent"> <span data-i18n="dataConsent"></span></label>
+            <a href="https://github.com/MeiTetsuH/shadow-scholar/blob/master/PRIVACY.md" target="_blank" rel="noopener noreferrer" data-i18n="privacyPolicy"></a>
+          </div>
+          <button class="btn btn-debug" id="btn-clear-history" data-i18n="clearLocalHistory"></button>
           <button class="btn btn-primary btn-save" id="btn-save-settings" data-i18n="btnSaveSettings">保存设置</button>
           
-          <!-- 调试日志 -->
-          <div class="debug-section">
-            <button class="btn btn-debug" id="btn-show-logs" data-i18n="btnShowLogs">🔍 查看调试日志</button>
-            <button class="btn btn-debug btn-danger" id="btn-clear-logs" data-i18n="btnClearLogs">🗑️ 清除日志</button>
-            <div class="debug-logs" id="debug-logs" style="display: none;">
-              <pre id="debug-logs-content"></pre>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
@@ -141,6 +141,7 @@
 
     <!-- 底部输入区域 -->
     <footer class="input-area" id="input-area">
+      <p class="data-notice" data-i18n="dataNotice"></p>
       <div class="input-actions">
         <button class="input-action-btn" id="btn-quick-page" data-i18n-title="btnQuickPageTitle" title="分析页面">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -168,6 +169,7 @@
   <script src="prompts.js"></script>
   <script src="settings.js"></script>
   <script src="lib/marked.min.js"></script>
+  <script src="markdown.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 </html>

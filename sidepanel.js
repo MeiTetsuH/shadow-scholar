@@ -22,20 +22,8 @@ function logError(...args) {
   storeLog('ERROR', args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
 }
 
-function storeLog(level, message) {
-  try {
-    chrome.storage.local.get('debugLogs', (result) => {
-      const logs = result.debugLogs || [];
-      logs.push({
-        time: new Date().toISOString(),
-        level,
-        source: 'sidepanel',
-        message
-      });
-      if (logs.length > 200) logs.splice(0, logs.length - 200);
-      chrome.storage.local.set({ debugLogs: logs });
-    });
-  } catch (e) {}
+function storeLog() {
+  // Diagnostics stay in DevTools; do not persist user content or credentials.
 }
 
 function maskUrlForLog(url) {
@@ -104,6 +92,8 @@ let currentPort = null;
 let currentAiMessageEl = null;
 let streamedContent = '';
 let currentSettings = Settings.normalizeSettings({});
+let currentWindowId;
+let renderTimer = null;
 let settingPromptMode = 'answer';
 const importedInlineRecordIds = new Set();
 
@@ -115,7 +105,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await I18n.initI18n();
   refreshModeMeta();
   I18n.applyI18n();
-  loadSettings();
+  currentWindowId = (await chrome.windows.getCurrent()).id;
+  await loadSettings();
   setupEventListeners();
   setupMarkdown();
   listenForContextMenuQueries();
@@ -132,7 +123,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // 监听模式变化（用户在 popup 中切换模式时实时更新）
-  chrome.storage.onChanged.addListener((changes) => {
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+    if (changes.pendingQuery || changes.pendingInlineRecords) checkPendingQuery();
     if (changes.mode) {
       updateModeBadge(changes.mode.newValue);
       setTopbarMode(changes.mode.newValue);
@@ -178,18 +171,17 @@ function applyModeBadge(badge, mode) {
 /**
  * 更新顶部连接状态指示器
  */
-function updateConnectionStatus() {
-  chrome.storage.local.get(['apiKey'], (result) => {
-    const statusEl = document.getElementById('topbar-status');
-    if (!statusEl) return;
-    if (result.apiKey) {
-      statusEl.classList.add('connected');
-      statusEl.title = I18n.t('statusConnected');
-    } else {
-      statusEl.classList.remove('connected');
-      statusEl.title = I18n.t('statusNotConnected');
-    }
-  });
+async function updateConnectionStatus() {
+  const statusEl = document.getElementById('topbar-status');
+  if (!statusEl) return;
+  try {
+    const result = await chrome.runtime.sendMessage({ type: 'get-settings' });
+    const endpoint = Settings.buildChatCompletionsUrl(result.apiUrl);
+    const local = ['localhost', '127.0.0.1', '[::1]'].includes(new URL(endpoint).hostname);
+    const configured = Boolean((result.apiKey || local) && result.dataConsentEndpoint === endpoint);
+    statusEl.classList.toggle('connected', configured);
+    statusEl.title = I18n.t(configured ? 'statusConnected' : 'statusNotConnected');
+  } catch { statusEl.classList.remove('connected'); }
 }
 
 function setupMarkdown() {
@@ -204,54 +196,6 @@ function setupMarkdown() {
   }
 }
 
-const MARKDOWN_ALLOWED_TAGS = new Set([
-  'p', 'br', 'strong', 'b', 'em', 'i', 'code', 'pre', 'blockquote',
-  'ul', 'ol', 'li', 'hr', 'a', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
-]);
-
-const MARKDOWN_ALLOWED_ATTRS = {
-  a: new Set(['href', 'title', 'target', 'rel']),
-  code: new Set(['class'])
-};
-
-function sanitizeRenderedHtml(html) {
-  const template = document.createElement('template');
-  template.innerHTML = html;
-
-  template.content.querySelectorAll('*').forEach((el) => {
-    const tag = el.tagName.toLowerCase();
-    if (!MARKDOWN_ALLOWED_TAGS.has(tag)) {
-      el.replaceWith(document.createTextNode(el.textContent || ''));
-      return;
-    }
-
-    [...el.attributes].forEach((attr) => {
-      const allowedAttrs = MARKDOWN_ALLOWED_ATTRS[tag];
-      if (!allowedAttrs || !allowedAttrs.has(attr.name)) {
-        el.removeAttribute(attr.name);
-      }
-    });
-
-    if (tag === 'a') {
-      const href = el.getAttribute('href') || '';
-      let safeHref = false;
-      try {
-        const parsed = new URL(href, window.location.href);
-        safeHref = ['http:', 'https:', 'mailto:'].includes(parsed.protocol);
-      } catch (e) {}
-
-      if (!safeHref) {
-        el.removeAttribute('href');
-      }
-      el.setAttribute('target', '_blank');
-      el.setAttribute('rel', 'noopener noreferrer');
-    }
-  });
-
-  return template.innerHTML;
-}
-
 // ============================
 // 检查待处理查询（从 storage 消息队列）
 // ============================
@@ -262,6 +206,7 @@ async function checkPendingQuery() {
     if (Array.isArray(result.pendingInlineRecords) && result.pendingInlineRecords.length > 0) {
       let importedCount = 0;
       result.pendingInlineRecords.forEach((record) => {
+        if (record.windowId != null && record.windowId !== currentWindowId) return;
         if (importInlineAnswerRecord(record, { silent: true })) importedCount++;
         if (record?.id) acknowledgeInlineRecord(record.id);
       });
@@ -270,25 +215,9 @@ async function checkPendingQuery() {
       }
     }
     
-    // 检查待处理查询
-    if (result.pendingQuery) {
-      const { prompt, timestamp, useScreenshot } = result.pendingQuery;
-      const age = Date.now() - timestamp;
-      log('发现待处理查询, 年龄:', age, 'ms, prompt长度:', prompt.length);
-
-      // 30 秒内的查询才处理
-      if (age < 30000) {
-        // 立即清除，防止重复处理
-        await chrome.storage.local.remove('pendingQuery');
-        log('已清除待处理查询, 开始执行');
-        // 稍等 DOM 完全就绪
-        setTimeout(() => {
-          sendMessage(prompt, { useScreenshot: useScreenshot === true });
-        }, 300);
-      } else {
-        log('待处理查询已过期, 清除');
-        await chrome.storage.local.remove('pendingQuery');
-      }
+    if (!isStreaming) {
+      const query = await chrome.runtime.sendMessage({ type: 'claim-pending-query', windowId: currentWindowId });
+      if (query?.prompt) sendMessage(query.prompt, { useScreenshot: query.useScreenshot, tabId: query.tabId });
     }
 
     // 检查待处理操作（如打开设置）
@@ -317,7 +246,7 @@ function setupEventListeners() {
   // 发送消息
   elements.btnSend.addEventListener('click', handleSend);
   elements.inputText.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
       e.preventDefault();
       handleSend();
     }
@@ -339,6 +268,11 @@ function setupEventListeners() {
     if (e.target === elements.settingsOverlay) closeSettings();
   });
   elements.btnSaveSettings.addEventListener('click', saveSettings);
+  elements.settingApiUrl.addEventListener('input', () => { document.getElementById('setting-data-consent').checked = false; });
+  document.getElementById('btn-clear-history').addEventListener('click', async () => {
+    const result = await chrome.runtime.sendMessage({ type: 'clear-local-history' });
+    if (result?.success) { clearConversation(); showToast(I18n.t('toastHistoryCleared'), 'success'); }
+  });
 
   // API Key 显示切换
   elements.toggleKeyVisibility.addEventListener('click', () => {
@@ -434,15 +368,6 @@ function listenForContextMenuQueries() {
       return;
     }
 
-    if (message.type === 'context-menu-query' && message.prompt) {
-      // 检查是否已经有相同的待处理查询（避免重复）
-      if (!isStreaming) {
-        log('处理右键菜单查询, prompt长度:', message.prompt.length);
-        sendMessage(message.prompt, { useScreenshot: message.useScreenshot === true });
-      } else {
-        log('正在流式输出中, 忽略右键菜单查询');
-      }
-    }
     if (message.type === 'open-settings') {
       openSettings();
     }
@@ -522,7 +447,7 @@ function sendMessage(text, options = {}) {
   conversationMessages.push({ role: 'user', content: text });
 
   // 开始流式请求
-  startStreaming({ useScreenshot });
+  startStreaming({ useScreenshot, tabId: options.tabId });
 }
 
 // ============================
@@ -545,13 +470,14 @@ async function analyzeContent(type) {
 
     if (type === 'page') {
       showToast(I18n.t('toastFetchingPage'));
-      chrome.runtime.sendMessage({ type: 'get-page-content' }, (response) => {
+      chrome.runtime.sendMessage({ type: 'get-page-content', windowId: currentWindowId }, (response) => {
         log('页面内容响应:', response ? 'OK' : 'null', chrome.runtime.lastError?.message || '');
         if (chrome.runtime.lastError) {
           logError('获取页面内容错误:', chrome.runtime.lastError.message);
           showToast(I18n.t('toastPageContentError', chrome.runtime.lastError.message), 'error');
           return;
         }
+        if (response?.error) { showToast(response.error, 'error'); return; }
         if (response && response.content) {
           sendMessage(Prompts.buildPageAnalysisPrompt({
             title: response.title || '',
@@ -563,13 +489,14 @@ async function analyzeContent(type) {
         }
       });
     } else if (type === 'selection') {
-      chrome.runtime.sendMessage({ type: 'get-selected-text' }, (response) => {
-        log('选中文字响应:', response ? `text="${response.text?.substring(0, 50)}"` : 'null');
+      chrome.runtime.sendMessage({ type: 'get-selected-text', windowId: currentWindowId }, (response) => {
+        log('Selection response received:', Boolean(response?.text));
         if (chrome.runtime.lastError) {
           logError('获取选中文字错误:', chrome.runtime.lastError.message);
           showToast(I18n.t('toastSelectionError'), 'error');
           return;
         }
+        if (response?.error) { showToast(response.error, 'error'); return; }
         if (response && response.text && response.text.trim()) {
           sendMessage(Prompts.buildSelectionAnalysisPrompt(response.text));
         } else {
@@ -586,7 +513,7 @@ async function analyzeContent(type) {
 // ============================
 // 流式对话
 // ============================
-function startStreaming({ useScreenshot = false } = {}) {
+function startStreaming({ useScreenshot = false, tabId } = {}) {
   isStreaming = true;
   elements.btnSend.disabled = true;
   streamedContent = '';
@@ -600,7 +527,9 @@ function startStreaming({ useScreenshot = false } = {}) {
   // 建立 Port 连接
   currentPort = chrome.runtime.connect({ name: 'llm-stream' });
 
-  currentPort.onMessage.addListener((msg) => {
+  const port = currentPort;
+  port.onMessage.addListener((msg) => {
+    if (currentPort !== port) return;
     if (msg.type === 'chunk') {
       handleStreamChunk(msg.content);
     } else if (msg.type === 'done') {
@@ -612,17 +541,18 @@ function startStreaming({ useScreenshot = false } = {}) {
     }
   });
 
-  currentPort.onDisconnect.addListener(() => {
+  port.onDisconnect.addListener(() => {
+    if (currentPort !== port) return;
     log('Port 断开连接');
     if (isStreaming) {
-      handleStreamDone();
+      handleStreamError(I18n.t('panelErrorDisconnected'));
     }
   });
 
   // 发送消息
   currentPort.postMessage({
     action: useScreenshot ? 'chat-screenshot' : 'chat',
-    messages: [...conversationMessages]
+    messages: [...conversationMessages], windowId: currentWindowId, tabId
   });
   log('Chat 请求已发送, 消息数:', conversationMessages.length, '截图:', useScreenshot);
 }
@@ -640,18 +570,23 @@ function handleStreamChunk(content) {
 
   streamedContent += content;
 
-  // 渲染 Markdown
-  const bubble = currentAiMessageEl.querySelector('.message-content');
+  if (renderTimer === null) renderTimer = setTimeout(renderStreamFrame, 80);
+}
+
+function renderStreamFrame() {
+  clearTimeout(renderTimer);
+  renderTimer = null;
+  const bubble = currentAiMessageEl?.querySelector('.message-content');
   if (bubble) {
     bubble.innerHTML = renderMarkdown(streamedContent);
     bubble.classList.add('streaming-cursor');
-    addCopyButtonsToCode(currentAiMessageEl);
   }
-
   scrollToBottom();
 }
 
 function handleStreamDone() {
+  clearTimeout(renderTimer);
+  renderTimer = null;
   isStreaming = false;
   elements.btnSend.disabled = false;
   elements.typingIndicator.style.display = 'none';
@@ -673,12 +608,17 @@ function handleStreamDone() {
 
   currentAiMessageEl = null;
   streamedContent = '';
+  const finishedPort = currentPort;
   currentPort = null;
+  finishedPort?.disconnect();
+  checkPendingQuery();
 
   scrollToBottom();
 }
 
 function handleStreamError(error) {
+  clearTimeout(renderTimer);
+  renderTimer = null;
   isStreaming = false;
   elements.btnSend.disabled = false;
   elements.typingIndicator.style.display = 'none';
@@ -695,7 +635,9 @@ function handleStreamError(error) {
 
   currentAiMessageEl = null;
   streamedContent = '';
+  const failedPort = currentPort;
   currentPort = null;
+  failedPort?.disconnect();
   showToast(error, 'error');
 }
 
@@ -716,11 +658,12 @@ function addMessage(role, content) {
     <div class="message-bubble">
       <div class="message-content">${renderedContent}</div>
       <div class="message-actions">
-        <button class="message-action-btn" onclick="copyMessageContent(this)" title="${I18n.t('btnCopyTitle')}">📋</button>
+        <button class="message-action-btn" title="${I18n.t('btnCopyTitle')}">📋</button>
       </div>
     </div>
   `;
 
+  div.querySelector('.message-action-btn').addEventListener('click', event => copyMessageContent(event.currentTarget));
   elements.messages.appendChild(div);
 
   if (role === 'ai') {
@@ -732,19 +675,19 @@ function addMessage(role, content) {
 }
 
 function clearConversation() {
+  clearTimeout(renderTimer);
+  renderTimer = null;
+  const port = currentPort;
+  currentPort = null;
+  isStreaming = false;
+  port?.disconnect();
+  currentAiMessageEl = null;
+  streamedContent = '';
+  elements.btnSend.disabled = false;
+  elements.typingIndicator.style.display = 'none';
   conversationMessages = [];
   elements.messages.innerHTML = '';
   elements.welcome.classList.remove('hidden');
-
-  if (isStreaming && currentPort) {
-    currentPort.disconnect();
-    isStreaming = false;
-    elements.btnSend.disabled = false;
-    elements.typingIndicator.style.display = 'none';
-    currentAiMessageEl = null;
-    streamedContent = '';
-    currentPort = null;
-  }
 
   log('对话已清除');
   showToast(I18n.t('toastConversationCleared'), 'success');
@@ -763,7 +706,7 @@ function renderMarkdown(text) {
   if (!text) return '';
   if (typeof marked !== 'undefined') {
     try {
-      return sanitizeRenderedHtml(marked.parse(text));
+      return globalThis.ShadowScholarMarkdown.render(text);
     } catch (e) {
       logError('Markdown 渲染失败:', e.message);
       return escapeHtml(text);
@@ -811,7 +754,7 @@ function addCopyButtonsToCode(container) {
 }
 
 // 全局复制消息内容函数
-window.copyMessageContent = function(btn) {
+function copyMessageContent(btn) {
   const bubble = btn.closest('.message-bubble');
   const content = bubble.querySelector('.message-content');
   const text = content.textContent || content.innerText;
@@ -854,10 +797,8 @@ function closeSettings() {
   elements.settingsOverlay.classList.remove('active');
 }
 
-function loadSettings() {
-  chrome.storage.local.get(
-    Settings.SETTINGS_KEYS,
-    (result) => {
+async function loadSettings() {
+      const result = await chrome.runtime.sendMessage({ type: 'get-settings' });
       const settings = Settings.normalizeSettings(result);
       currentSettings = settings;
       settingPromptMode = settings.mode || 'answer';
@@ -866,6 +807,7 @@ function loadSettings() {
       if (settings.apiKey) elements.settingApiKey.value = settings.apiKey;
       elements.settingModel.value = settings.model;
       elements.settingAntiDetect.checked = settings.antiDetect;
+      try { document.getElementById('setting-data-consent').checked = settings.dataConsentEndpoint === Settings.buildChatCompletionsUrl(settings.apiUrl); } catch {};
       setSystemPromptEditorMode(settingPromptMode);
       const langSelect = document.getElementById('setting-language');
       if (langSelect) langSelect.value = settings.language || I18n.detectLanguage();
@@ -876,11 +818,9 @@ function loadSettings() {
         apiKey: settings.apiKey ? '***已设置***' : '(未设置)',
         antiDetect: settings.antiDetect
       });
-    }
-  );
 }
 
-function saveSettings() {
+async function saveSettings() {
   rememberSystemPromptDraft();
   const systemPrompts = Settings.normalizeSystemPrompts(currentSettings);
   const newLang = document.getElementById('setting-language')?.value || '';
@@ -894,77 +834,17 @@ function saveSettings() {
     language: newLang,
   };
 
-  chrome.storage.local.set(settings, () => {
+  try {
+    const endpoint = Settings.buildChatCompletionsUrl(settings.apiUrl);
+    settings.dataConsentEndpoint = document.getElementById('setting-data-consent').checked ? endpoint : '';
+    const oldLanguage = currentSettings.language || I18n.detectLanguage();
+    await chrome.storage.session.set({ apiKey: settings.apiKey });
+    const { apiKey, ...persistentSettings } = settings;
+    await chrome.storage.local.set(persistentSettings);
     currentSettings = Settings.normalizeSettings({ ...currentSettings, ...settings });
-    log('设置已保存');
-    const suffix = settings.antiDetect ? '' : I18n.t('toastAntiDetectHint');
-    showToast(I18n.t('toastSettingsSaved') + suffix, 'success');
+    showToast(newLang !== oldLanguage ? I18n.t('toastLanguageChanged') : I18n.t('toastSettingsSaved'), 'success');
     updateConnectionStatus();
     closeSettings();
-    if (newLang && newLang !== (currentSettings.language || I18n.detectLanguage())) {
-      showToast(I18n.t('toastLanguageChanged'), 'success');
-    }
-  });
+  } catch (error) { showToast(error.message, 'error'); }
+
 }
-
-// ============================
-// 调试日志查看器
-// ============================
-function setupDebugLogViewer() {
-  const btnShowLogs = document.getElementById('btn-show-logs');
-  const btnClearLogs = document.getElementById('btn-clear-logs');
-  const debugLogsDiv = document.getElementById('debug-logs');
-  const debugLogsContent = document.getElementById('debug-logs-content');
-
-  if (btnShowLogs) {
-    btnShowLogs.addEventListener('click', () => {
-      if (debugLogsDiv.style.display === 'none') {
-        debugLogsDiv.style.display = 'block';
-        loadDebugLogs();
-        btnShowLogs.textContent = I18n.t('btnHideLogs');
-      } else {
-        debugLogsDiv.style.display = 'none';
-        btnShowLogs.textContent = I18n.t('btnShowLogs');
-      }
-    });
-  }
-
-  if (btnClearLogs) {
-    btnClearLogs.addEventListener('click', () => {
-      chrome.runtime.sendMessage({ type: 'clear-debug-logs' }, () => {
-        if (debugLogsContent) debugLogsContent.innerHTML = '<span style="color: #22c55e;">' + I18n.t('logsCleared') + '</span>';
-        showToast(I18n.t('toastLogsCleared'), 'success');
-      });
-    });
-  }
-}
-
-function loadDebugLogs() {
-  const debugLogsContent = document.getElementById('debug-logs-content');
-  if (!debugLogsContent) return;
-
-  chrome.storage.local.get('debugLogs', (result) => {
-    const logs = result.debugLogs || [];
-    if (logs.length === 0) {
-      debugLogsContent.innerHTML = '<span style="color: var(--text-tertiary);">' + I18n.t('logsEmpty') + '</span>';
-      return;
-    }
-
-    const html = logs.map(entry => {
-      const time = new Date(entry.time).toLocaleTimeString();
-      const levelClass = entry.level === 'ERROR' ? 'log-error' : 'log-info';
-      const sourceClass = entry.source === 'background' ? 'log-source-bg' : 'log-source-sp';
-      const sourceLabel = entry.source === 'background' ? 'BG' : 'SP';
-      return `<span class="${levelClass}">[${time}] <span class="${sourceClass}">[${sourceLabel}]</span> ${escapeHtml(entry.message)}</span>`;
-    }).join('\n');
-
-    debugLogsContent.innerHTML = html;
-    // 滚动到底部
-    debugLogsContent.parentElement.scrollTop = debugLogsContent.parentElement.scrollHeight;
-  });
-}
-
-// 初始化调试日志查看器
-document.addEventListener('DOMContentLoaded', () => {
-  setupDebugLogViewer();
-});

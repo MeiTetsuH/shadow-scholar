@@ -23,34 +23,13 @@
    * 初始化 i18n。读取用户存储的语言偏好，
    * 如与浏览器语言不同则加载对应的 messages.json。
    */
-  function initI18n() {
-    return new Promise((resolve) => {
-      chrome.storage.local.get('language', async (result) => {
-        const stored = result.language;  // 'zh' | 'en' | undefined
-        const browserLang = detectLanguage();
-        const lang = stored || browserLang;
-
-        // 如果语言和浏览器一致且无显式覆盖，直接用原生 API
-        if (!stored || lang === browserLang) {
-          _messages = null;
-          _ready = true;
-          resolve();
-          return;
-        }
-
-        // 加载覆盖语言的 messages.json
-        try {
-          const dir = LOCALE_DIR[lang] || 'en';
-          const url = chrome.runtime.getURL(`_locales/${dir}/messages.json`);
-          const resp = await fetch(url);
-          _messages = await resp.json();
-        } catch (e) {
-          _messages = null;
-        }
-        _ready = true;
-        resolve();
-      });
-    });
+  async function initI18n() {
+    try {
+      const result = await chrome.runtime.sendMessage({ type: 'get-ui-settings' });
+      _messages = result?.messages || null;
+      if (typeof document !== 'undefined' && location.protocol === 'chrome-extension:') document.documentElement.lang = result?.language === 'zh' ? 'zh-CN' : 'en';
+    } catch { _messages = null; }
+    _ready = true;
   }
 
   /**
@@ -67,7 +46,7 @@
         for (const [name, info] of Object.entries(ph)) {
           const idx = parseInt(String(info.content).replace('$', '')) - 1;
           if (idx >= 0 && idx < subs.length) {
-            msg = msg.replace(new RegExp('\\$' + name + '\\$', 'gi'), subs[idx]);
+            msg = msg.replace(new RegExp('\\$' + name + '\\$', 'gi'), () => String(subs[idx]));
           }
         }
       }

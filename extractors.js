@@ -1,102 +1,42 @@
-/**
- * 影学者 - 页面提取层
- * 统一页面正文、题目块和选中文字提取逻辑。
- */
+/* Bounded, on-demand text extraction without cloning the entire page. */
 (() => {
   'use strict';
-
-  const QUESTION_SELECTORS = Object.freeze([
-    '.question', '.problem', '.quiz-question', '.exam-question',
-    '[data-question]', '[data-testid="question"]',
-    '.question-content', '.question-text', '.question-body',
-    '.problem-statement', '.problem-content',
-    '.que', '.questionBox', '.topic-content',
-    '.ques-content', '.subject_describe',
-    '.question_main', '.stem', '.stem_text',
-    '.challenge-body', '.task-body', '.exercise-content',
-    '.assessment-question', '.test-question',
-    '[class*="question"]', '[class*="problem"]',
-    '[id*="question"]', '[id*="problem"]'
-  ]);
-
-  const NOISE_SELECTORS = Object.freeze([
-    'nav', 'header', 'footer',
-    '.nav', '.navbar', '.sidebar', '.menu', '.ad',
-    'script', 'style', 'noscript'
-  ]);
-
-  function getElementText(element) {
-    return (element?.innerText || element?.textContent || '').trim();
-  }
-
-  function getUniqueTexts(elements, { minLength = 10, maxLength = 10000 } = {}) {
-    const texts = [];
-    elements.forEach((element) => {
-      const text = getElementText(element);
-      if (text.length >= minLength && text.length <= maxLength) {
-        texts.push(text);
+  const MAX_CHARS = 20000;
+  const QUESTION_SELECTORS = ['.question', '.problem', '.quiz-question', '[data-question]', '[data-testid="question"]', '.question-content', '.question-text', '.problem-statement', '.que', '.questionBox', '.question_main', '.stem', '.assessment-question'];
+  const NOISE = 'script,style,noscript,nav,header,footer,aside,textarea,input,select,[contenteditable],[role="textbox"],[hidden],[aria-hidden="true"],#__ninja-ai-host__';
+  function textFrom(root, doc) {
+    if (!root) return '';
+    const walker = doc.createTreeWalker(root, 1 | 4, {
+      acceptNode(node) {
+        if (node.nodeType === 1) return node.matches(NOISE) ? 2 : 3;
+        return node.textContent.trim() ? 1 : 3;
       }
     });
-    return [...new Set(texts)];
+    let result = '';
+    let node;
+    while (result.length < MAX_CHARS && (node = walker.nextNode())) result += node.textContent.slice(0, MAX_CHARS - result.length) + '\n';
+    return result.trim().slice(0, MAX_CHARS);
   }
-
   function extractQuestionContent(doc = document) {
-    const questions = [];
-
-    QUESTION_SELECTORS.forEach((selector) => {
-      try {
-        questions.push(...getUniqueTexts(doc.querySelectorAll(selector)));
-      } catch (e) {}
-    });
-
-    const unique = [...new Set(questions)];
-    return unique.length > 0 ? unique.join('\n\n---\n\n') : null;
-  }
-
-  function extractMainContent(doc = document) {
-    const mainContent = doc.querySelector('article, main, [role="main"]');
-    if (mainContent) return getElementText(mainContent);
-
-    const body = doc.body;
-    if (!body) return '';
-
-    const clone = body.cloneNode(true);
-    NOISE_SELECTORS.forEach((selector) => {
-      try {
-        clone.querySelectorAll(selector).forEach((element) => element.remove());
-      } catch (e) {}
-    });
-
-    return getElementText(clone);
-  }
-
-  function extractPageContent(doc = document, win = window) {
-    const title = doc.title;
-    const url = win.location.href;
-    const questionContent = extractQuestionContent(doc);
-
-    if (questionContent) {
-      return { title, url, content: questionContent, type: 'question' };
+    const selector = QUESTION_SELECTORS.join(',');
+    const nodes = [...doc.querySelectorAll(selector)].filter(node => !node.parentElement?.closest(selector) && !node.closest(NOISE));
+    let result = '';
+    const seen = new Set();
+    for (const node of nodes) {
+      const text = textFrom(node, doc);
+      if (text.length >= 10 && !seen.has(text)) {
+        seen.add(text);
+        result += (result ? '\n\n---\n\n' : '') + text;
+      }
+      if (result.length >= MAX_CHARS) break;
     }
-
-    const mainContent = doc.querySelector('article, main, [role="main"]');
-    if (mainContent) {
-      return { title, url, content: getElementText(mainContent), type: 'main' };
-    }
-
-    return { title, url, content: extractMainContent(doc), type: 'fullpage' };
+    return result.slice(0, MAX_CHARS) || null;
   }
-
-  function getSelectedText(win = window) {
-    return win.getSelection()?.toString() || '';
+  function extractMainContent(doc = document) { return textFrom(doc.querySelector('article,main,[role="main"]') || doc.body, doc); }
+  function extractPageContent(doc = document) {
+    const question = extractQuestionContent(doc);
+    return { title: doc.title.slice(0, 500), content: question || extractMainContent(doc), type: question ? 'question' : 'main' };
   }
-
-  globalThis.ShadowScholarExtractors = Object.freeze({
-    QUESTION_SELECTORS,
-    NOISE_SELECTORS,
-    extractQuestionContent,
-    extractMainContent,
-    extractPageContent,
-    getSelectedText
-  });
+  function getSelectedText(win = window) { return (win.getSelection()?.toString() || '').slice(0, 50000); }
+  globalThis.ShadowScholarExtractors = Object.freeze({ extractQuestionContent, extractMainContent, extractPageContent, getSelectedText });
 })();
