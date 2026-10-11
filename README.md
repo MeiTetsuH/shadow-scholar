@@ -1,22 +1,36 @@
 <p align="center">
-  <img src="icons/icon128.png" width="64" alt="Shadow Scholar">
+  <img src="docs/images/promo-marquee.png" width="1400" alt="影学者：Stay curious. Stay on the page. 日系书刊风格的 AI 阅读助手">
 </p>
 <h1 align="center">影学者 · Shadow Scholar</h1>
 <p align="center"><strong>把好奇心，留在这一页。</strong><br>Stay curious. Stay on the page.</p>
 <p align="center">
   <a href="https://chromewebstore.google.com/detail/fjokopekhdlkbdaegfjnphiocpmiaimj">Chrome Web Store</a> ·
+  <a href="docs/REVIEW_GUIDE.md">Review guide</a> ·
   <a href="PRIVACY.md">Privacy</a> ·
+  <a href="LICENSE">MIT License</a> ·
   <a href="https://github.com/MeiTetsuH/shadow-scholar/issues">Support</a> ·
   <a href="docs/README.en.md">English</a>
 </p>
-
-![影学者：纸白、墨绿与朱红书签构成的阅读界面](docs/images/store-zh-01.png)
 
 影学者是一款 Chrome 阅读与学习助手。选中一段文字，读懂一个观点，再在侧栏里继续追问。你选择 AI 模型，它把解释放在阅读发生的地方。
 
 纸白的底色、墨色的文字、克制的朱红标记。界面借鉴日系书刊与文具的排版，让正文、操作和数据说明各有位置。
 
+<p align="center"><strong>Chrome 116+ · Manifest V3 · 中文 / English · 自选云端或本机模型</strong></p>
+
+## 先了解它
+
+| 安装与使用 | 公开说明与审核资料 |
+| --- | --- |
+| [Chrome Web Store](https://chromewebstore.google.com/detail/fjokopekhdlkbdaegfjnphiocpmiaimj) | [隐私政策：数据、接收方与保留时间](PRIVACY.md) |
+| [开始使用](#开始使用) · [本地保存与清除](#本地保存与清除) | [审核指南：权限用途与可复现测试](docs/REVIEW_GUIDE.md) |
+| [问题反馈](https://github.com/MeiTetsuH/shadow-scholar/issues) | [MIT 许可证](LICENSE) · [第三方声明](THIRD_PARTY_NOTICES.md) |
+
+源码、截图与文档对应 **1.3.0**。商店版本以实际页面为准；提交审核不等于已获批准。图片中的阅读文章与 AI 回答为演示内容，实际结果由你配置的模型生成。
+
 ## 从阅读，到理解
+
+![影学者：纸白、墨绿与朱红书签构成的阅读界面](docs/images/store-zh-01.png)
 
 | 你想做什么 | 怎么开始 |
 | --- | --- |
@@ -68,6 +82,27 @@
 
 可选的「文字选择辅助」只处理编辑器外的复制、选择和右键菜单，不改写粘贴、焦点、可见性、计时器或脚本执行。完整的数据类别、接收方、保留时间和权限用途见 [隐私政策](PRIVACY.md)。
 
+## 设计与商店素材
+
+界面、图标与宣传图采用同一套纸白、墨绿和朱红配色。素材已保存在仓库中，便于查看与复现。
+
+<details>
+<summary>展开商店宣传图与全部截图</summary>
+
+<p><img src="docs/images/promo-small.png" width="440" alt="影学者 440 × 280 小型宣传图块"></p>
+
+| 素材 | 尺寸 | 文件 |
+| --- | --- | --- |
+| 小型宣传图块 | 440 × 280 | [PNG](docs/images/promo-small.png) |
+| 顶部宣传图块 | 1400 × 560 | [PNG](docs/images/promo-marquee.png) |
+| 中文截图 | 1280 × 800 | [阅读](docs/images/store-zh-01.png) · [问答](docs/images/store-zh-02.png) · [本地模型](docs/images/store-zh-03.png) |
+| English screenshots | 1280 × 800 | [Reading](docs/images/store-en-01.png) · [Conversation](docs/images/store-en-02.png) · [Local model](docs/images/store-en-03.png) |
+| 图标 | 16 / 48 / 128 / 1024 | [商店图标](icons/icon128.png) · [源图](icons/icon1024.png) · [SVG](icons/logo.svg) |
+
+商店截图与宣传图块均为无 alpha 透明层的 24 位 RGB PNG。设计说明、图标生成提示词和本机预览方法见 [设计目录](design/README.md)。
+
+</details>
+
 ## 开发与验证
 
 使用 Node.js 22+ 与 npm。安装依赖后，可在 `chrome://extensions` 中加载仓库目录作为未打包扩展。
@@ -96,6 +131,8 @@ npm run design
 | `sidepanel.*` / `content.js` | 侧栏、设置、页内浮窗 |
 | `markdown.js` / `ui-icons.js` | 安全 Markdown 与随包提供的界面图标 |
 
-## License
+## 开源许可与反馈
 
-[MIT](LICENSE)。随包分发的 Marked 同为 MIT，许可证见 `lib/marked.LICENSE`。
+本仓库使用 [MIT License](LICENSE)。复制或再分发时请保留原许可证和著作权声明。随扩展分发的 Marked 保留其[完整许可证](lib/marked.LICENSE)，来源与版本见 [第三方声明](THIRD_PARTY_NOTICES.md)。AI 服务商的使用条款与生成内容不由本仓库许可证替代。
+
+使用问题可通过 [GitHub Issues](https://github.com/MeiTetsuH/shadow-scholar/issues) 反馈，请注明扩展版本、Chrome 版本、操作步骤和错误信息。公开问题中请勿粘贴 API 密钥、个人通信或敏感网页内容。审核人员可直接参考 [Review guide](docs/REVIEW_GUIDE.md)。

@@ -1,12 +1,22 @@
-<p align="center"><img src="../icons/icon128.png" width="64" alt="Shadow Scholar"></p>
+<p align="center"><img src="images/promo-marquee.png" width="1400" alt="Shadow Scholar — Stay curious. Stay on the page."></p>
 <h1 align="center">Shadow Scholar</h1>
-<p align="center">Stay curious. Stay on the page.<br><a href="../README.md">中文</a> · <a href="https://chromewebstore.google.com/detail/fjokopekhdlkbdaegfjnphiocpmiaimj">Chrome Web Store</a> · <a href="../PRIVACY.md">Privacy</a></p>
-
-![A reading companion, right beside the page](images/store-en-01.png)
+<p align="center">Stay curious. Stay on the page.<br><a href="../README.md">中文</a> · <a href="https://chromewebstore.google.com/detail/fjokopekhdlkbdaegfjnphiocpmiaimj">Chrome Web Store</a> · <a href="../PRIVACY.md">Privacy</a> · <a href="REVIEW_GUIDE.md">Review guide</a> · <a href="../LICENSE">MIT License</a></p>
 
 A Chrome reading companion with a quiet, Japanese editorial-inspired interface. Select a passage, ask for an explanation, and keep a conversation beside the page. Bring your own OpenAI-compatible AI provider or a local model.
 
+## Public information
+
+| For users | For reviewers and contributors |
+| --- | --- |
+| [Chrome Web Store](https://chromewebstore.google.com/detail/fjokopekhdlkbdaegfjnphiocpmiaimj) | [Review guide and reproducible tests](REVIEW_GUIDE.md) |
+| [Privacy and data handling](../PRIVACY.md) | [MIT license](../LICENSE) · [Third-party notices](../THIRD_PARTY_NOTICES.md) |
+| [Support](https://github.com/MeiTetsuH/shadow-scholar/issues) | [1.3.0 release notes](RELEASE_1.3.0.md) |
+
+The source and artwork describe 1.3.0; the store determines the publicly available version. A review submission is not approval. Reading passages and model responses in artwork are illustrative.
+
 ## Read, connect, understand
+
+![A reading companion, right beside the page](images/store-en-01.png)
 
 - Explain selected text through the floating action or context menu.
 - Read the current page in a dedicated side panel.
@@ -42,8 +52,32 @@ Keys live only in trusted browser session memory and must be entered again after
 
 The optional selection helper preserves copy, selection, and context menus outside editors without changing paste, focus, visibility, timers, or script execution. See the complete [privacy policy](../PRIVACY.md).
 
+## Store artwork
+
+<details>
+<summary>View the promotional tile and download all assets</summary>
+
+<p><img src="images/promo-small.png" width="440" alt="Shadow Scholar small promotional tile"></p>
+
+| Asset | Dimensions | Files |
+| --- | --- | --- |
+| Small promotional tile | 440 × 280 | [PNG](images/promo-small.png) |
+| Marquee promotional tile | 1400 × 560 | [PNG](images/promo-marquee.png) |
+| English screenshots | 1280 × 800 | [Reading](images/store-en-01.png) · [Conversation](images/store-en-02.png) · [Local model](images/store-en-03.png) |
+| Chinese screenshots | 1280 × 800 | [Reading](images/store-zh-01.png) · [Conversation](images/store-zh-02.png) · [Local model](images/store-zh-03.png) |
+
+All store screenshots and promotional tiles are 24-bit RGB PNGs without alpha. See [design sources and provenance](../design/README.md).
+
+</details>
+
 ## Development
 
 Use Node.js 22+ and npm. Run `npm ci --ignore-scripts`, then `npm run verify` and `npm run package`. The package is built from a checked allowlist with CRC and SHA-256 verification. Load the repository as an unpacked extension for real Chrome tests.
 
-`npm run design` serves the local visual workbench on port 11438. It uses the actual interface with synthetic fixture content and a local simulated response, makes no external model calls, and is excluded from the ZIP. See [design notes](../design/README.md). Code is [MIT licensed](../LICENSE).
+`npm run design` serves the local visual workbench on port 11438. It uses the actual interface with synthetic fixture content and a local simulated response, makes no external model calls, and is excluded from the ZIP. See [design notes](../design/README.md).
+
+## License & support
+
+The repository uses the [MIT license](../LICENSE). Retain its license and copyright notice in copies or redistributed versions. Bundled Marked retains its [complete upstream license](../lib/marked.LICENSE); see [third-party notices](../THIRD_PARTY_NOTICES.md). Provider terms and generated content are not replaced by this repository license.
+
+Report reproducible issues through [GitHub Issues](https://github.com/MeiTetsuH/shadow-scholar/issues), including the extension version, Chrome version, steps, and sanitized error details. Never include API keys or private page content in a public issue.
